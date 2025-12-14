@@ -1,10 +1,11 @@
 [workspace]
 resolver = "2"
-members = []
+members = [
+    "crates/gouide-protocol",
+]
 
 # Future members will be added here:
 # members = [
-#     "crates/gouide-protocol",
 #     "crates/gouide-daemon",
 #     "crates/gouide-workspace",
 #     "crates/gouide-fs",
@@ -22,7 +23,7 @@ license = "MIT"
 repository = "https://github.com/aram-devdocs/gouide"
 
 [workspace.dependencies]
-# Common dependencies will be defined here
+# Common dependencies
 tokio = { version = "1.41", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -30,6 +31,11 @@ thiserror = "2.0"
 anyhow = "1.0"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Protocol/gRPC dependencies
+prost = "0.13"
+tonic = { version = "0.12", default-features = false }
+tonic-build = "0.12"
 
 [profile.dev]
 opt-level = 0

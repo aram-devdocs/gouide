@@ -7,10 +7,10 @@ todos:
     status: done
   - id: codegen-pipeline
     content: Add non-committed codegen pipeline (`pnpm gen`, optional `cargo xtask gen`) so builds/tests always generate from `protocol/` (source of truth) and never rely on stale artifacts.
-    status: pending
+    status: done
   - id: define-protocol
     content: Define the core<->UI contract in `protocol/` (protobuf), including streaming events and versioning policy; generate Rust + TS types as the single source of truth.
-    status: pending
+    status: done
   - id: scaffold-core-daemon
     content: Scaffold Rust workspace in `core/` with `gouide-daemon` exposing the protocol over local IPC (UDS/named pipe).
     status: pending
@@ -466,25 +466,42 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Created `core/Cargo.toml` as empty Rust workspace
 - Verified with `pnpm install` - all workspace packages resolved
 
-### TODO 2: Define Protocol ⬜ NEXT
-- Install buf CLI and create `buf.yaml` in `protocol/`
-- Define initial protobuf messages in `protocol/gouide/v1/`:
-  - `common.proto` - shared types (RequestId, Timestamp, etc.)
-  - `handshake.proto` - Hello/Welcome messages
-  - `workspace.proto` - open folder, file tree, buffers
-  - `editor.proto` - open/save/edit operations
-- Add versioning policy comments in protos
+### TODO 2: Define Protocol ✅ DONE
+- Created `buf.yaml` with lint/breaking rules (STANDARD + COMMENTS, FILE-level breaking)
+- Created `protocol/gouide/v1/common.proto`:
+  - RequestId, Timestamp, Error, RetryHint, Severity
+  - PaginationRequest/Response with cursor-based tokens
+  - StreamMeta with sequence, delta_type, dedupe_key for streaming
+  - Position, Range, FileId, BufferId, WorkspaceId
+  - Capabilities, WorkspaceLimits for handshake negotiation
+- Created `protocol/gouide/v1/handshake.proto`:
+  - Handshake service (Connect, Disconnect, Ping)
+  - Hello/Welcome messages with protocol version, capabilities, reconnect tokens
+  - Control service with Cancel RPC for request cancellation
+  - HandshakeError with error codes (VERSION_MISMATCH, DUPLICATE_CLIENT, etc.)
+- Created `protocol/gouide/v1/workspace.proto`:
+  - Workspace service (OpenWorkspace, CloseWorkspace, GetWorkspaceStatus, ListDirectory, WatchFileTree, WatchWorkspaceStatus)
+  - Buffer service (OpenBuffer, CloseBuffer, SaveBuffer, GetBufferContent, ListBuffers)
+  - FileEntry with type, size, git status, language detection
+  - Streaming with delta types (SNAPSHOT, ADD, UPDATE, REMOVE, RESET_REQUIRED)
+- Created `protocol/gouide/v1/editor.proto`:
+  - Editor service (ApplyEdits, GetSyntaxTokens, WatchSyntaxTokens, GetDiagnostics, WatchDiagnostics, WatchBufferChanges, FormatBuffer, FormatSelection)
+  - TextEdit for OT-style versioned edits
+  - SyntaxToken with TokenType enum (22 types) and TokenModifier bitmask
+  - Diagnostic with severity, code, source, related info (LSP-compatible)
+- Added comprehensive versioning policy comments in all protos
 
-### TODO 3: Codegen Pipeline ⬜
-- Create `buf.gen.yaml` for TypeScript generation
-- Add `pnpm gen` script that runs buf generate
-- Configure `packages/protocol/` to receive generated TS types
-- Add Rust codegen via `prost` in `core/` build scripts
-- Ensure generated files are gitignored
-- Update turbo.json so `codegen` runs before `build`/`typecheck`
+### TODO 3: Codegen Pipeline ✅ DONE
+- Created `protocol/buf.gen.yaml` with bufbuild/es + connectrpc/es plugins
+- Updated `packages/protocol/package.json` with @bufbuild/protobuf, @connectrpc/connect deps
+- Created `packages/protocol/tsconfig.json` and barrel exports (index.ts, connect.ts)
+- Created `core/crates/gouide-protocol/` with tonic-build codegen
+- Renamed `Connect` RPC to `Establish` to avoid tonic client method conflict
+- Added `scripts/install-deps.sh` for cross-platform dependency installation
+- Verified: `pnpm codegen` generates TS types, `cargo build -p gouide-protocol` compiles Rust types
 
-### TODO 4: Scaffold Core Daemon ⬜
-- Create `core/crates/gouide-protocol/` - generated Rust types
+### TODO 4: Scaffold Core Daemon ⬜ NEXT
+- gouide-protocol crate already created in TODO 3
 - Create `core/crates/gouide-daemon/` - main binary with:
   - UDS/named pipe listener
   - Hello/Welcome handshake

@@ -14,7 +14,6 @@ out/
 
 # === Generated code (codegen outputs) ===
 **/src/generated/
-packages/protocol/src/
 
 # === Rust ===
 /core/target/

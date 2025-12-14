@@ -1,0 +1,21 @@
+# Buf code generation configuration
+# Generates TypeScript types from protobuf definitions
+# See: https://buf.build/docs/configuration/v2/buf-gen-yaml
+
+version: v2
+
+plugins:
+  # Generate TypeScript message types (@bufbuild/protobuf)
+  # Note: out path is relative to where `buf generate` is run from (packages/protocol/)
+  - remote: buf.build/bufbuild/es:v2.2.3
+    out: ./src/generated
+    opt:
+      - target=ts
+      - import_extension=.js
+
+  # Generate Connect-ES service stubs (@connectrpc/connect)
+  - remote: buf.build/connectrpc/es:v1.6.1
+    out: ./src/generated
+    opt:
+      - target=ts
+      - import_extension=.js

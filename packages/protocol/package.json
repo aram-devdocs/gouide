@@ -9,16 +9,27 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
+    },
+    "./connect": {
+      "types": "./src/connect.ts",
+      "import": "./src/connect.ts"
     }
   },
   "scripts": {
-    "build": "echo 'Protocol types are generated - no build needed'",
+    "build": "echo 'Protocol types are source - no build needed'",
     "typecheck": "tsc --noEmit",
     "lint": "echo 'Generated code - lint skipped'",
     "clean": "rm -rf dist .turbo src/generated",
-    "codegen": "echo 'Codegen placeholder - proto compilation will go here'"
+    "codegen": "buf generate --template ../../protocol/buf.gen.yaml ../../protocol",
+    "codegen:lint": "buf lint ../../protocol",
+    "codegen:breaking": "buf breaking ../../protocol --against .git#branch=main"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.2.3",
+    "@connectrpc/connect": "^2.0.0-rc.3"
   },
   "devDependencies": {
+    "@bufbuild/buf": "^1.47.2",
     "@gouide/typescript-config": "workspace:*",
     "typescript": "^5.7.2"
   }
