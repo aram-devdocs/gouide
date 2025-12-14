@@ -5,6 +5,13 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
 
+  // Resolve @gouide/primitives to the desktop implementation
+  resolve: {
+    alias: {
+      '@gouide/primitives': '@gouide/primitives-desktop',
+    },
+  },
+
   // Prevent vite from obscuring rust errors
   clearScreen: false,
 

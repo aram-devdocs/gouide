@@ -2,6 +2,7 @@
   "name": "gouide",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@9.15.0",
   "engines": {
     "node": ">=20.0.0"
@@ -28,8 +29,11 @@
     "desktop:build": "pnpm --filter @gouide/desktop tauri build"
   },
   "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "eslint": "^9.16.0",
     "prettier": "^3.4.2",
     "turbo": "^2.3.3",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.17.0"
   }
 }

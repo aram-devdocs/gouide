@@ -18,7 +18,7 @@ todos:
       - define-protocol
   - id: scaffold-desktop-app
     content: Scaffold `apps/desktop` (Tauri) that composes shared frontend packages (`packages/frontend/*`) to render a minimal IDE shell (explorer + editor placeholder) connected to the daemon.
-    status: pending
+    status: done
     dependencies:
       - scaffold-monorepo
       - scaffold-core-daemon
@@ -30,7 +30,7 @@ todos:
       - scaffold-desktop-app
   - id: primitives-boundaries
     content: Enforce primitives import boundaries (only atoms may import `@gouide/primitives`) via eslint rules; scaffold `packages/frontend/shared/theme` tokens as the single source of truth; derive Tailwind preset/config from those tokens for web/desktop.
-    status: pending
+    status: done
     dependencies:
       - scaffold-monorepo
   - id: ci-contract-enforcement
@@ -514,26 +514,56 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Updated `core/Cargo.toml` with new workspace members and dependencies (uuid, chrono, fs4, hyper, tower)
 - Verified: `cargo build --workspace` and `cargo test --workspace` pass (20 tests)
 
-### TODO 5: Scaffold Desktop App ⬜ NEXT
-- Run `pnpm create tauri-app` in `apps/desktop/`
-- Configure Tauri to spawn/attach to daemon
-- Create minimal React shell with sidebar + editor placeholder
-- Wire up `@gouide/core-client` to communicate with daemon
-- Verify desktop app launches and connects to daemon
+### TODO 5: Scaffold Desktop App ✅ DONE
+- Created Tauri 2.x project in `apps/desktop/` with React + Vite frontend
+- Created `apps/desktop/src-tauri/` Rust backend:
+  - `bridge/discovery.rs`: Daemon discovery via lock file + process validation
+  - `bridge/client.rs`: gRPC client over Unix domain sockets (tonic + hyper)
+  - `bridge/commands.rs`: Tauri commands (discover_daemon, connect, disconnect, ping)
+- Created `packages/core-client/`:
+  - `GouideClient` class with connection state machine
+  - `TauriTransport` adapter for Tauri invoke commands
+  - Event subscriptions and reconnection support
+- Created minimal React shell UI:
+  - `Shell.tsx`: Main layout with sidebar + editor area
+  - `Sidebar.tsx`: Explorer placeholder
+  - `EditorArea.tsx`: Editor placeholder with welcome message
+  - `StatusBar.tsx`: Connection status display with retry button
+  - `useDaemonConnection.tsx`: React context for connection state
+- Created `scripts/install.sh` for system dependencies (Debian/Fedora/Arch/macOS)
+- Created `scripts/daemon.sh` for daemon management (start/stop/status/logs/dev)
+- Added npm scripts: `daemon:start`, `daemon:stop`, `daemon:status`, `desktop`
+- Verified: TypeScript compiles, Vite builds, Rust compiles (with system deps)
 
-### TODO 6: Primitives & Theme Boundaries ⬜
-- Implement `packages/frontend/primitives/web/` with: Box, Stack, Text, Pressable
-- Implement `packages/frontend/primitives/desktop/` (same interface)
-- Create `packages/frontend/shared/theme/` with design tokens
-- Add eslint rules: only atoms can import `@gouide/primitives`
-- Generate Tailwind preset from theme tokens
+### TODO 6: Primitives & Theme Boundaries ✅ DONE
+- Created `packages/frontend/shared/theme/src/`:
+  - `tokens.ts`: Design tokens (colors, spacing, typography, radii) extracted from existing CSS
+  - `css.ts`: CSS variable generator function
+  - `tailwind-preset.ts`: Tailwind preset generator for optional consumption
+  - `index.ts`: Barrel export
+- Created `packages/frontend/primitives/web/src/`:
+  - `types.ts`: Shared interface types (BoxProps, StackProps, TextProps, PressableProps)
+  - `utils/tokens.ts`: Token-to-CSS-variable resolution
+  - `Box.tsx`, `Stack.tsx`, `Text.tsx`, `Pressable.tsx`: Primitives using CSS custom properties
+  - `index.ts`: Barrel export
+- Created `packages/frontend/primitives/desktop/src/`:
+  - `index.ts`: Re-exports from web (Tauri uses WebView)
+- Created `packages/frontend/shared/ui/src/`:
+  - `atoms/Button.tsx`: Example atom using primitives
+  - `atoms/index.ts`, `index.ts`: Barrel exports
+- Created `eslint.config.js`:
+  - ESLint 9.x flat config with `no-restricted-imports` rule
+  - Blocks `@gouide/primitives*` imports everywhere except `packages/frontend/shared/ui/`
+- Updated `apps/desktop/vite.config.ts`: Added `@gouide/primitives` alias to desktop implementation
+- Added tsconfig.json to: theme, primitives/web, primitives/desktop, ui, hooks, editor, state
+- Verified: `pnpm install`, `pnpm typecheck` pass; ESLint boundary rule blocks disallowed imports
 
-### TODO 7: Daemon Lifecycle & Tray ⬜
-- Implement attach-or-spawn logic in Tauri sidecar
+### TODO 7: Daemon Lifecycle & Tray ⬜ NEXT
+- Implement attach-or-spawn logic in Tauri sidecar (connect-only done; spawn TBD)
 - Add tray/menu bar indicator (show when minimized)
 - Add "Quit on close" vs "Minimize to tray" setting
-- Implement lock + metadata file for daemon discovery
-- Handle orphan cleanup (stale pid detection)
+- ~~Implement lock + metadata file for daemon discovery~~ (done in TODO 4)
+- ~~Handle orphan cleanup (stale pid detection)~~ (done in scripts/daemon.sh)
 
 ### TODO 8: CI Contract Enforcement ⬜
 - Add pre-commit hooks: fmt, clippy, lint, typecheck

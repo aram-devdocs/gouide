@@ -1,0 +1,9 @@
+{
+  "extends": "@gouide/typescript-config/library.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}

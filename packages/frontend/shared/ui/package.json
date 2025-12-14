@@ -18,12 +18,13 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "lint": "echo 'No source files yet'",
+    "lint": "eslint src --ext ts,tsx",
     "clean": "rm -rf dist .turbo",
     "test": "echo 'No tests yet'"
   },
   "dependencies": {
-    "@gouide/frontend-theme": "workspace:*"
+    "@gouide/frontend-theme": "workspace:*",
+    "@gouide/primitives-desktop": "workspace:*"
   },
   "devDependencies": {
     "@gouide/typescript-config": "workspace:*",
