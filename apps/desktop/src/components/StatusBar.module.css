@@ -1,0 +1,58 @@
+.statusBar {
+  height: var(--statusbar-height);
+  background-color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: white;
+}
+
+.left, .right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.disconnected {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.connecting {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.connected {
+  color: white;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: white;
+  background-color: var(--error-color);
+  padding: 0 var(--spacing-sm);
+  border-radius: 2px;
+}
+
+.retryButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.retryButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.info {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  opacity: 0.8;
+}

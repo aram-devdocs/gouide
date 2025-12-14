@@ -9,17 +9,22 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
+    },
+    "./tauri": {
+      "types": "./src/tauri.ts",
+      "import": "./src/tauri.ts"
     }
   },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "lint": "echo 'No source files yet'",
+    "lint": "eslint src --ext ts",
     "clean": "rm -rf dist .turbo",
     "test": "echo 'No tests yet'"
   },
   "dependencies": {
-    "@gouide/protocol": "workspace:*"
+    "@gouide/protocol": "workspace:*",
+    "@tauri-apps/api": "^2.1.1"
   },
   "devDependencies": {
     "@gouide/typescript-config": "workspace:*",

@@ -2,23 +2,29 @@
   "name": "@gouide/desktop",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "echo 'Desktop app placeholder - Tauri not yet configured'",
-    "build": "echo 'Desktop build placeholder'",
-    "typecheck": "echo 'No TypeScript files yet'",
-    "lint": "echo 'No source files yet'",
-    "clean": "rm -rf dist .turbo"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts,tsx",
+    "clean": "rm -rf dist .turbo",
+    "tauri": "tauri"
   },
   "dependencies": {
-    "@gouide/frontend-ui": "workspace:*",
-    "@gouide/frontend-theme": "workspace:*",
-    "@gouide/frontend-state": "workspace:*",
-    "@gouide/frontend-editor": "workspace:*",
-    "@gouide/primitives-desktop": "workspace:*",
-    "@gouide/core-client": "workspace:*"
+    "@gouide/core-client": "workspace:*",
+    "@tauri-apps/api": "^2.1.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@gouide/typescript-config": "workspace:*",
-    "typescript": "^5.7.2"
+    "@tauri-apps/cli": "^2.1.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3"
   }
 }

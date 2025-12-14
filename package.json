@@ -16,7 +16,16 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
     "codegen": "turbo run codegen",
-    "prepare": "echo 'Ready'"
+    "prepare": "echo 'Ready'",
+    "install:deps": "./scripts/install.sh",
+    "daemon": "./scripts/daemon.sh",
+    "daemon:start": "./scripts/daemon.sh start",
+    "daemon:stop": "./scripts/daemon.sh stop",
+    "daemon:status": "./scripts/daemon.sh status",
+    "daemon:logs": "./scripts/daemon.sh logs",
+    "daemon:dev": "./scripts/daemon.sh dev",
+    "desktop": "pnpm --filter @gouide/desktop tauri dev",
+    "desktop:build": "pnpm --filter @gouide/desktop tauri build"
   },
   "devDependencies": {
     "prettier": "^3.4.2",
