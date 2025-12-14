@@ -1,0 +1,292 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    devDependencies:
+      prettier:
+        specifier: ^3.4.2
+        version: 3.7.4
+      turbo:
+        specifier: ^2.3.3
+        version: 2.6.3
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  apps/cli:
+    dependencies:
+      '@gouide/core-client':
+        specifier: workspace:*
+        version: link:../../packages/core-client
+      '@gouide/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  apps/desktop:
+    dependencies:
+      '@gouide/core-client':
+        specifier: workspace:*
+        version: link:../../packages/core-client
+      '@gouide/frontend-editor':
+        specifier: workspace:*
+        version: link:../../packages/frontend/shared/editor
+      '@gouide/frontend-state':
+        specifier: workspace:*
+        version: link:../../packages/frontend/shared/state
+      '@gouide/frontend-theme':
+        specifier: workspace:*
+        version: link:../../packages/frontend/shared/theme
+      '@gouide/frontend-ui':
+        specifier: workspace:*
+        version: link:../../packages/frontend/shared/ui
+      '@gouide/primitives-desktop':
+        specifier: workspace:*
+        version: link:../../packages/frontend/primitives/desktop
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/core-client:
+    dependencies:
+      '@gouide/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/frontend/primitives/desktop:
+    dependencies:
+      react:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.3
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../../../typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/frontend/primitives/web:
+    dependencies:
+      react:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.3(react@19.2.3)
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../../../typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/frontend/shared/editor:
+    dependencies:
+      '@gouide/frontend-hooks':
+        specifier: workspace:*
+        version: link:../hooks
+      '@gouide/frontend-state':
+        specifier: workspace:*
+        version: link:../state
+      react:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.3
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../../../typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/frontend/shared/hooks:
+    dependencies:
+      react:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.3
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../../../typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/frontend/shared/state:
+    dependencies:
+      '@gouide/core-client':
+        specifier: workspace:*
+        version: link:../../../core-client
+      '@gouide/protocol':
+        specifier: workspace:*
+        version: link:../../../protocol
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../../../typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/frontend/shared/theme:
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../../../typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/frontend/shared/ui:
+    dependencies:
+      '@gouide/frontend-theme':
+        specifier: workspace:*
+        version: link:../theme
+      react:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.3
+      react-dom:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.3(react@19.2.3)
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../../../typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/protocol:
+    devDependencies:
+      '@gouide/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  packages/typescript-config: {}
+
+packages:
+
+  prettier@3.7.4:
+    resolution: {integrity: sha512-v6UNi1+3hSlVvv8fSaoUbggEM5VErKmmpGA7Pl3HF8V6uKY7rvClBOJlH6yNwQtfTueNkGVpOv/mtWL9L4bgRA==}
+    engines: {node: '>=14'}
+    hasBin: true
+
+  react-dom@19.2.3:
+    resolution: {integrity: sha512-yELu4WmLPw5Mr/lmeEpox5rw3RETacE++JgHqQzd2dg+YbJuat3jH4ingc+WPZhxaoFzdv9y33G+F7Nl5O0GBg==}
+    peerDependencies:
+      react: ^19.2.3
+
+  react@19.2.3:
+    resolution: {integrity: sha512-Ku/hhYbVjOQnXDZFv2+RibmLFGwFdeeKHFcOTlrt7xplBnya5OGn/hIRDsqDiSUcfORsDC7MPxwork8jBwsIWA==}
+    engines: {node: '>=0.10.0'}
+
+  scheduler@0.27.0:
+    resolution: {integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==}
+
+  turbo-darwin-64@2.6.3:
+    resolution: {integrity: sha512-BlJJDc1CQ7SK5Y5qnl7AzpkvKSnpkfPmnA+HeU/sgny3oHZckPV2776ebO2M33CYDSor7+8HQwaodY++IINhYg==}
+    cpu: [x64]
+    os: [darwin]
+
+  turbo-darwin-arm64@2.6.3:
+    resolution: {integrity: sha512-MwVt7rBKiOK7zdYerenfCRTypefw4kZCue35IJga9CH1+S50+KTiCkT6LBqo0hHeoH2iKuI0ldTF2a0aB72z3w==}
+    cpu: [arm64]
+    os: [darwin]
+
+  turbo-linux-64@2.6.3:
+    resolution: {integrity: sha512-cqpcw+dXxbnPtNnzeeSyWprjmuFVpHJqKcs7Jym5oXlu/ZcovEASUIUZVN3OGEM6Y/OTyyw0z09tOHNt5yBAVg==}
+    cpu: [x64]
+    os: [linux]
+
+  turbo-linux-arm64@2.6.3:
+    resolution: {integrity: sha512-MterpZQmjXyr4uM7zOgFSFL3oRdNKeflY7nsjxJb2TklsYqiu3Z9pQ4zRVFFH8n0mLGna7MbQMZuKoWqqHb45w==}
+    cpu: [arm64]
+    os: [linux]
+
+  turbo-windows-64@2.6.3:
+    resolution: {integrity: sha512-biDU70v9dLwnBdLf+daoDlNJVvqOOP8YEjqNipBHzgclbQlXbsi6Gqqelp5er81Qo3BiRgmTNx79oaZQTPb07Q==}
+    cpu: [x64]
+    os: [win32]
+
+  turbo-windows-arm64@2.6.3:
+    resolution: {integrity: sha512-dDHVKpSeukah3VsI/xMEKeTnV9V9cjlpFSUs4bmsUiLu3Yv2ENlgVEZv65wxbeE0bh0jjpmElDT+P1KaCxArQQ==}
+    cpu: [arm64]
+    os: [win32]
+
+  turbo@2.6.3:
+    resolution: {integrity: sha512-bf6YKUv11l5Xfcmg76PyWoy/e2vbkkxFNBGJSnfdSXQC33ZiUfutYh6IXidc5MhsnrFkWfdNNLyaRk+kHMLlwA==}
+    hasBin: true
+
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+snapshots:
+
+  prettier@3.7.4: {}
+
+  react-dom@19.2.3(react@19.2.3):
+    dependencies:
+      react: 19.2.3
+      scheduler: 0.27.0
+
+  react@19.2.3: {}
+
+  scheduler@0.27.0: {}
+
+  turbo-darwin-64@2.6.3:
+    optional: true
+
+  turbo-darwin-arm64@2.6.3:
+    optional: true
+
+  turbo-linux-64@2.6.3:
+    optional: true
+
+  turbo-linux-arm64@2.6.3:
+    optional: true
+
+  turbo-windows-64@2.6.3:
+    optional: true
+
+  turbo-windows-arm64@2.6.3:
+    optional: true
+
+  turbo@2.6.3:
+    optionalDependencies:
+      turbo-darwin-64: 2.6.3
+      turbo-darwin-arm64: 2.6.3
+      turbo-linux-64: 2.6.3
+      turbo-linux-arm64: 2.6.3
+      turbo-windows-64: 2.6.3
+      turbo-windows-arm64: 2.6.3
+
+  typescript@5.9.3: {}

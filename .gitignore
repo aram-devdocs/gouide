@@ -1,0 +1,61 @@
+# === Dependencies ===
+node_modules/
+.pnpm-store/
+
+# === Build outputs ===
+dist/
+build/
+out/
+.next/
+*.tsbuildinfo
+
+# === Turbo ===
+.turbo/
+
+# === Generated code (codegen outputs) ===
+**/src/generated/
+packages/protocol/src/
+
+# === Rust ===
+/core/target/
+**/*.rs.bk
+Cargo.lock
+
+# === Tauri ===
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/Cargo.lock
+
+# === IDE & Editor ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Environment ===
+.env
+.env.local
+.env.*.local
+*.local
+
+# === Logs ===
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Test coverage ===
+coverage/
+.nyc_output/
+
+# === Misc ===
+*.pem
+.cache/
+tmp/
+temp/

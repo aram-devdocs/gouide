@@ -1,0 +1,24 @@
+{
+  "name": "@gouide/desktop",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Desktop app placeholder - Tauri not yet configured'",
+    "build": "echo 'Desktop build placeholder'",
+    "typecheck": "echo 'No TypeScript files yet'",
+    "lint": "echo 'No source files yet'",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@gouide/frontend-ui": "workspace:*",
+    "@gouide/frontend-theme": "workspace:*",
+    "@gouide/frontend-state": "workspace:*",
+    "@gouide/frontend-editor": "workspace:*",
+    "@gouide/primitives-desktop": "workspace:*",
+    "@gouide/core-client": "workspace:*"
+  },
+  "devDependencies": {
+    "@gouide/typescript-config": "workspace:*",
+    "typescript": "^5.7.2"
+  }
+}

@@ -4,7 +4,7 @@ overview: "Design Gouide as a hub-and-spoke system: a high-performance Rust core
 todos:
   - id: scaffold-monorepo
     content: Set up pnpm + turborepo monorepo structure (`apps/*`, `packages/*`, `core/*`, `protocol/*`) with consistent build/test/typecheck pipelines.
-    status: in_progress
+    status: done
   - id: codegen-pipeline
     content: Add non-committed codegen pipeline (`pnpm gen`, optional `cargo xtask gen`) so builds/tests always generate from `protocol/` (source of truth) and never rely on stale artifacts.
     status: pending
@@ -451,3 +451,71 @@ The repo must be “clone and go”, with deterministic codegen and consistent c
 ## Open decisions (optional follow-ups)
 
 - Mobile styling approach (when `apps/mobile` is added): NativeWind/Tailwind-style on RN vs token-to-style-object mapping in primitives. Either way, tokens remain the source of truth.
+
+---
+
+## Implementation TODOs (Sequential)
+
+Each TODO is designed to be completed in a single session. Complete in order. The next agent should pick up the next pending TODO.
+
+### TODO 1: Scaffold Monorepo ✅ DONE
+- Created root configs: `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `.gitignore`, `.npmrc`
+- Created `tsconfig.base.json` and `packages/typescript-config/` with base/library/app configs
+- Created directory structure for `apps/`, `packages/`, `core/`, `protocol/`, `tools/`, `docs/`
+- Created `package.json` for each workspace member (13 packages total)
+- Created `core/Cargo.toml` as empty Rust workspace
+- Verified with `pnpm install` - all workspace packages resolved
+
+### TODO 2: Define Protocol ⬜ NEXT
+- Install buf CLI and create `buf.yaml` in `protocol/`
+- Define initial protobuf messages in `protocol/gouide/v1/`:
+  - `common.proto` - shared types (RequestId, Timestamp, etc.)
+  - `handshake.proto` - Hello/Welcome messages
+  - `workspace.proto` - open folder, file tree, buffers
+  - `editor.proto` - open/save/edit operations
+- Add versioning policy comments in protos
+
+### TODO 3: Codegen Pipeline ⬜
+- Create `buf.gen.yaml` for TypeScript generation
+- Add `pnpm gen` script that runs buf generate
+- Configure `packages/protocol/` to receive generated TS types
+- Add Rust codegen via `prost` in `core/` build scripts
+- Ensure generated files are gitignored
+- Update turbo.json so `codegen` runs before `build`/`typecheck`
+
+### TODO 4: Scaffold Core Daemon ⬜
+- Create `core/crates/gouide-protocol/` - generated Rust types
+- Create `core/crates/gouide-daemon/` - main binary with:
+  - UDS/named pipe listener
+  - Hello/Welcome handshake
+  - Graceful shutdown
+- Add `core/crates/gouide-workspace/` stub
+- Verify `cargo build` and `cargo test` work
+
+### TODO 5: Scaffold Desktop App ⬜
+- Run `pnpm create tauri-app` in `apps/desktop/`
+- Configure Tauri to spawn/attach to daemon
+- Create minimal React shell with sidebar + editor placeholder
+- Wire up `@gouide/core-client` to communicate with daemon
+- Verify desktop app launches and connects to daemon
+
+### TODO 6: Primitives & Theme Boundaries ⬜
+- Implement `packages/frontend/primitives/web/` with: Box, Stack, Text, Pressable
+- Implement `packages/frontend/primitives/desktop/` (same interface)
+- Create `packages/frontend/shared/theme/` with design tokens
+- Add eslint rules: only atoms can import `@gouide/primitives`
+- Generate Tailwind preset from theme tokens
+
+### TODO 7: Daemon Lifecycle & Tray ⬜
+- Implement attach-or-spawn logic in Tauri sidecar
+- Add tray/menu bar indicator (show when minimized)
+- Add "Quit on close" vs "Minimize to tray" setting
+- Implement lock + metadata file for daemon discovery
+- Handle orphan cleanup (stale pid detection)
+
+### TODO 8: CI Contract Enforcement ⬜
+- Add pre-commit hooks: fmt, clippy, lint, typecheck
+- Add buf lint and buf breaking checks
+- Configure GitHub Actions matrix (Windows/macOS/Linux)
+- Ensure protocol changes that break any frontend are flagged
+- Add semver policy for protocol package

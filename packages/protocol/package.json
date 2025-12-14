@@ -1,0 +1,25 @@
+{
+  "name": "@gouide/protocol",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "echo 'Protocol types are generated - no build needed'",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'Generated code - lint skipped'",
+    "clean": "rm -rf dist .turbo src/generated",
+    "codegen": "echo 'Codegen placeholder - proto compilation will go here'"
+  },
+  "devDependencies": {
+    "@gouide/typescript-config": "workspace:*",
+    "typescript": "^5.7.2"
+  }
+}

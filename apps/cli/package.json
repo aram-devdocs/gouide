@@ -1,0 +1,21 @@
+{
+  "name": "@gouide/cli",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'CLI placeholder'",
+    "build": "echo 'CLI build placeholder'",
+    "typecheck": "echo 'No TypeScript files yet'",
+    "lint": "echo 'No source files yet'",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@gouide/core-client": "workspace:*",
+    "@gouide/protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@gouide/typescript-config": "workspace:*",
+    "typescript": "^5.7.2"
+  }
+}
