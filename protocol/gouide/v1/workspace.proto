@@ -1,0 +1,578 @@
+// Gouide Protocol - Workspace Operations
+// Version: 1.0.0
+//
+// WORKSPACE LIFECYCLE:
+// 1. Client calls OpenWorkspace to open a folder
+// 2. Daemon returns WorkspaceId and starts background indexing
+// 3. Client subscribes to file tree and status streams
+// 4. Client calls CloseWorkspace when done
+//
+// STREAMING SEMANTICS:
+// - WatchFileTree: delta updates (add/update/remove) with full snapshot on subscribe
+// - All streams support gap detection via StreamMeta.sequence
+// - Clients must handle DELTA_TYPE_RESET_REQUIRED by re-subscribing
+
+syntax = "proto3";
+
+package gouide.v1;
+
+import "gouide/v1/common.proto";
+
+// ============================================================================
+// WORKSPACE SERVICE
+// ============================================================================
+
+// Workspace service for folder and file management.
+service Workspace {
+  // Open a workspace folder. Returns workspace ID for subsequent operations.
+  rpc OpenWorkspace(OpenWorkspaceRequest) returns (OpenWorkspaceResponse);
+
+  // Close a workspace and release resources.
+  rpc CloseWorkspace(CloseWorkspaceRequest) returns (CloseWorkspaceResponse);
+
+  // Get current workspace status.
+  rpc GetWorkspaceStatus(GetWorkspaceStatusRequest) returns (GetWorkspaceStatusResponse);
+
+  // List files in a directory (paginated, non-streaming).
+  rpc ListDirectory(ListDirectoryRequest) returns (ListDirectoryResponse);
+
+  // Subscribe to file tree changes (streaming).
+  // First message is full snapshot; subsequent are deltas.
+  rpc WatchFileTree(WatchFileTreeRequest) returns (stream FileTreeEvent);
+
+  // Subscribe to workspace status changes (streaming).
+  rpc WatchWorkspaceStatus(WatchWorkspaceStatusRequest) returns (stream WorkspaceStatusEvent);
+}
+
+// ============================================================================
+// OPEN WORKSPACE
+// ============================================================================
+
+// Request to open a workspace folder.
+message OpenWorkspaceRequest {
+  // Request ID for cancellation/idempotency.
+  RequestId request_id = 1;
+
+  // Absolute path to the folder to open.
+  string folder_path = 2;
+
+  // Optional: workspace name override (defaults to folder name).
+  string name = 3;
+
+  // Optional: file patterns to exclude from watching.
+  repeated string exclude_patterns = 4;
+}
+
+// Response to OpenWorkspace.
+message OpenWorkspaceResponse {
+  // Result of the operation.
+  oneof result {
+    OpenWorkspaceSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful workspace open result.
+message OpenWorkspaceSuccess {
+  // Assigned workspace ID for this session.
+  WorkspaceId workspace_id = 1;
+
+  // Resolved absolute path.
+  string folder_path = 2;
+
+  // Workspace name.
+  string name = 3;
+
+  // Initial status.
+  WorkspaceStatus status = 4;
+}
+
+// ============================================================================
+// CLOSE WORKSPACE
+// ============================================================================
+
+// Request to close a workspace.
+message CloseWorkspaceRequest {
+  // Request ID for cancellation/idempotency.
+  RequestId request_id = 1;
+  // Workspace to close.
+  WorkspaceId workspace_id = 2;
+}
+
+// Response to CloseWorkspace.
+message CloseWorkspaceResponse {
+  // Result of the operation.
+  oneof result {
+    CloseWorkspaceSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful workspace close result.
+message CloseWorkspaceSuccess {
+  // Confirmation.
+  bool closed = 1;
+}
+
+// ============================================================================
+// WORKSPACE STATUS
+// ============================================================================
+
+// Indexing states.
+enum IndexingState {
+  INDEXING_STATE_UNSPECIFIED = 0;
+  INDEXING_STATE_NOT_STARTED = 1;
+  INDEXING_STATE_SCANNING = 2;
+  INDEXING_STATE_INDEXING = 3;
+  INDEXING_STATE_COMPLETE = 4;
+  INDEXING_STATE_PAUSED = 5;
+  INDEXING_STATE_ERROR = 6;
+}
+
+// Current workspace status.
+message WorkspaceStatus {
+  // Current indexing state.
+  IndexingState indexing_state = 1;
+
+  // Percentage complete if indexing (0-100).
+  uint32 indexing_progress = 2;
+
+  // Number of files in workspace.
+  uint64 file_count = 3;
+
+  // Number of open buffers.
+  uint32 open_buffer_count = 4;
+
+  // Whether file watcher is active.
+  bool watcher_active = 5;
+
+  // Last update timestamp.
+  Timestamp last_updated = 6;
+}
+
+// Request to get workspace status.
+message GetWorkspaceStatusRequest {
+  // Workspace to query.
+  WorkspaceId workspace_id = 1;
+}
+
+// Response to GetWorkspaceStatus.
+message GetWorkspaceStatusResponse {
+  // Result of the operation.
+  oneof result {
+    WorkspaceStatus status = 1;
+    Error error = 2;
+  }
+}
+
+// Request to watch workspace status changes.
+message WatchWorkspaceStatusRequest {
+  // Workspace to watch.
+  WorkspaceId workspace_id = 1;
+}
+
+// Streaming status updates.
+message WorkspaceStatusEvent {
+  // Stream metadata.
+  StreamMeta meta = 1;
+  // Current status.
+  WorkspaceStatus status = 2;
+}
+
+// ============================================================================
+// FILE TREE
+// ============================================================================
+
+// File type classification.
+enum FileType {
+  FILE_TYPE_UNSPECIFIED = 0;
+  FILE_TYPE_FILE = 1;
+  FILE_TYPE_DIRECTORY = 2;
+  FILE_TYPE_SYMLINK = 3;
+}
+
+// Git status for a file.
+enum GitFileStatus {
+  GIT_FILE_STATUS_UNSPECIFIED = 0;
+  GIT_FILE_STATUS_UNTRACKED = 1;
+  GIT_FILE_STATUS_MODIFIED = 2;
+  GIT_FILE_STATUS_ADDED = 3;
+  GIT_FILE_STATUS_DELETED = 4;
+  GIT_FILE_STATUS_RENAMED = 5;
+  GIT_FILE_STATUS_COPIED = 6;
+  GIT_FILE_STATUS_IGNORED = 7;
+  GIT_FILE_STATUS_CONFLICT = 8;
+}
+
+// Entry in the file tree.
+message FileEntry {
+  // Unique file identifier (workspace-relative path).
+  FileId file_id = 1;
+
+  // Display name (file/folder name only).
+  string name = 2;
+
+  // File type.
+  FileType file_type = 3;
+
+  // Size in bytes (0 for directories).
+  uint64 size = 4;
+
+  // Last modification time.
+  Timestamp modified_at = 5;
+
+  // Whether this directory has children (for lazy loading).
+  bool has_children = 6;
+
+  // Child count if known (for directories).
+  uint32 child_count = 7;
+
+  // Parent path (empty for root entries).
+  string parent_path = 8;
+
+  // Detected language ID (e.g., "typescript", "rust").
+  string language_id = 9;
+
+  // Whether file is ignored by patterns.
+  bool is_ignored = 10;
+
+  // Git status if available.
+  GitFileStatus git_status = 11;
+}
+
+// Request to list a directory (paginated, one-shot).
+message ListDirectoryRequest {
+  // Request ID for cancellation/idempotency.
+  RequestId request_id = 1;
+  // Workspace to query.
+  WorkspaceId workspace_id = 2;
+
+  // Directory path to list (empty for root).
+  string path = 3;
+
+  // Pagination.
+  PaginationRequest pagination = 4;
+
+  // Whether to include hidden files.
+  bool include_hidden = 5;
+
+  // Whether to recursively list (use with caution - prefer streaming).
+  bool recursive = 6;
+
+  // Depth limit for recursive listing (0 = no limit).
+  uint32 max_depth = 7;
+}
+
+// Response to ListDirectory.
+message ListDirectoryResponse {
+  // Result of the operation.
+  oneof result {
+    ListDirectorySuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful directory listing result.
+message ListDirectorySuccess {
+  // Files in this page.
+  repeated FileEntry entries = 1;
+
+  // Pagination info.
+  PaginationResponse pagination = 2;
+
+  // Total size of directory in bytes.
+  uint64 total_size = 3;
+}
+
+// ============================================================================
+// FILE TREE WATCHING (STREAMING)
+// ============================================================================
+
+// Subscribe to file tree changes.
+message WatchFileTreeRequest {
+  // Workspace to watch.
+  WorkspaceId workspace_id = 1;
+
+  // Root path to watch (empty for entire workspace).
+  string root_path = 2;
+
+  // Maximum depth to watch (0 = unlimited).
+  uint32 max_depth = 3;
+
+  // Whether to include hidden files.
+  bool include_hidden = 4;
+
+  // Whether to include git status updates.
+  bool include_git_status = 5;
+}
+
+// Streaming file tree event.
+message FileTreeEvent {
+  // Stream metadata for gap detection.
+  StreamMeta meta = 1;
+
+  // Affected entries (interpretation depends on meta.delta_type).
+  // SNAPSHOT: all entries in watched tree.
+  // ADD: new entries.
+  // UPDATE: modified entries.
+  // REMOVE: entries with only file_id set (path only).
+  repeated FileEntry entries = 2;
+}
+
+// ============================================================================
+// BUFFER SERVICE
+// ============================================================================
+
+// Buffer service for managing open file buffers.
+service Buffer {
+  // Open a file into a buffer.
+  rpc OpenBuffer(OpenBufferRequest) returns (OpenBufferResponse);
+
+  // Close a buffer.
+  rpc CloseBuffer(CloseBufferRequest) returns (CloseBufferResponse);
+
+  // Save buffer to disk.
+  rpc SaveBuffer(SaveBufferRequest) returns (SaveBufferResponse);
+
+  // Get current buffer content.
+  rpc GetBufferContent(GetBufferContentRequest) returns (GetBufferContentResponse);
+
+  // List all open buffers.
+  rpc ListBuffers(ListBuffersRequest) returns (ListBuffersResponse);
+}
+
+// ============================================================================
+// OPEN BUFFER
+// ============================================================================
+
+// Line ending styles.
+enum LineEnding {
+  LINE_ENDING_UNSPECIFIED = 0;
+  // Unix (LF).
+  LINE_ENDING_LF = 1;
+  // Windows (CRLF).
+  LINE_ENDING_CRLF = 2;
+  // Old Mac (CR).
+  LINE_ENDING_CR = 3;
+}
+
+// Request to open a file into a buffer.
+message OpenBufferRequest {
+  // Request ID for cancellation/idempotency.
+  RequestId request_id = 1;
+  // Workspace containing the file.
+  WorkspaceId workspace_id = 2;
+
+  // File to open.
+  FileId file_id = 3;
+
+  // Client-specified buffer ID (optional - daemon assigns if empty).
+  BufferId buffer_id = 4;
+
+  // Encoding hint (defaults to UTF-8 with BOM detection).
+  string encoding = 5;
+}
+
+// Response to OpenBuffer.
+message OpenBufferResponse {
+  // Result of the operation.
+  oneof result {
+    OpenBufferSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful buffer open result.
+message OpenBufferSuccess {
+  // Assigned buffer ID.
+  BufferId buffer_id = 1;
+
+  // File path.
+  FileId file_id = 2;
+
+  // File content (may be chunked for large files).
+  string content = 3;
+
+  // Detected or specified encoding.
+  string encoding = 4;
+
+  // Detected line ending style.
+  LineEnding line_ending = 5;
+
+  // File version for conflict detection.
+  uint64 version = 6;
+
+  // Detected language.
+  string language_id = 7;
+
+  // File modified time for conflict detection.
+  Timestamp modified_at = 8;
+
+  // Whether file is read-only.
+  bool read_only = 9;
+
+  // Content checksum for verification.
+  string checksum = 10;
+
+  // If file is too large, content may be paginated.
+  bool content_truncated = 11;
+
+  // Total file size in bytes.
+  uint64 total_size = 12;
+}
+
+// ============================================================================
+// CLOSE BUFFER
+// ============================================================================
+
+// Request to close a buffer.
+message CloseBufferRequest {
+  // Request ID for cancellation/idempotency.
+  RequestId request_id = 1;
+  // Buffer to close.
+  BufferId buffer_id = 2;
+
+  // Whether to save before closing.
+  bool save_before_close = 3;
+
+  // Whether to force close even if dirty.
+  bool force = 4;
+}
+
+// Response to CloseBuffer.
+message CloseBufferResponse {
+  // Result of the operation.
+  oneof result {
+    CloseBufferSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful buffer close result.
+message CloseBufferSuccess {
+  // Confirmation.
+  bool closed = 1;
+  // Whether content was saved.
+  bool saved = 2;
+}
+
+// ============================================================================
+// SAVE BUFFER
+// ============================================================================
+
+// Request to save a buffer to disk.
+message SaveBufferRequest {
+  // Request ID for cancellation/idempotency.
+  RequestId request_id = 1;
+  // Buffer to save.
+  BufferId buffer_id = 2;
+
+  // Current content to save.
+  string content = 3;
+
+  // Expected version for optimistic concurrency.
+  uint64 expected_version = 4;
+
+  // Optional: save to different path (save-as).
+  FileId target_file_id = 5;
+
+  // Optional: encoding override.
+  string encoding = 6;
+
+  // Optional: line ending override.
+  LineEnding line_ending = 7;
+}
+
+// Response to SaveBuffer.
+message SaveBufferResponse {
+  // Result of the operation.
+  oneof result {
+    SaveBufferSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful buffer save result.
+message SaveBufferSuccess {
+  // New version after save.
+  uint64 version = 1;
+
+  // File modified time after save.
+  Timestamp modified_at = 2;
+
+  // Whether the save created a new file.
+  bool created = 3;
+
+  // Final file path (may differ from original for save-as).
+  FileId file_id = 4;
+}
+
+// ============================================================================
+// GET BUFFER CONTENT
+// ============================================================================
+
+// Request to get buffer content.
+message GetBufferContentRequest {
+  // Buffer to query.
+  BufferId buffer_id = 1;
+
+  // Optional: range to fetch (for large files).
+  Range range = 2;
+}
+
+// Response to GetBufferContent.
+message GetBufferContentResponse {
+  // Result of the operation.
+  oneof result {
+    GetBufferContentSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful buffer content retrieval.
+message GetBufferContentSuccess {
+  // Buffer content.
+  string content = 1;
+  // Current version.
+  uint64 version = 2;
+  // If range was specified, the range actually returned.
+  Range range = 3;
+  // Total line count.
+  uint32 line_count = 4;
+}
+
+// ============================================================================
+// LIST BUFFERS
+// ============================================================================
+
+// Request to list all open buffers.
+message ListBuffersRequest {
+  // Workspace to query.
+  WorkspaceId workspace_id = 1;
+}
+
+// Response to ListBuffers.
+message ListBuffersResponse {
+  // Open buffers.
+  repeated BufferInfo buffers = 1;
+}
+
+// Information about an open buffer.
+message BufferInfo {
+  // Buffer ID.
+  BufferId buffer_id = 1;
+  // File path.
+  FileId file_id = 2;
+  // Detected language.
+  string language_id = 3;
+  // Current version.
+  uint64 version = 4;
+  // Whether buffer has unsaved changes.
+  bool is_dirty = 5;
+  // Whether file is read-only.
+  bool read_only = 6;
+  // When buffer was opened.
+  Timestamp opened_at = 7;
+  // When buffer was last modified.
+  Timestamp last_modified_at = 8;
+}

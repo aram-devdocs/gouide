@@ -1,0 +1,206 @@
+// Gouide Protocol - Connection Handshake
+// Version: 1.0.0
+//
+// HANDSHAKE PROTOCOL:
+// 1. Client connects and sends Hello as the first message
+// 2. Daemon validates and responds with Welcome or HandshakeError
+// 3. On success, client proceeds with normal RPCs
+// 4. On failure, client must disconnect and display error
+//
+// VERSIONING:
+// - Protocol version is separate from package version
+// - Clients and daemons must agree on compatible protocol versions
+// - Version format: major.minor.patch (semver)
+
+syntax = "proto3";
+
+package gouide.v1;
+
+import "gouide/v1/common.proto";
+
+// ============================================================================
+// HANDSHAKE SERVICE
+// ============================================================================
+
+// Handshake service for establishing client-daemon connections.
+// Must be called first before any other RPCs.
+service Handshake {
+  // Initiate connection handshake. Returns Welcome on success.
+  // Fast-fails with HandshakeError if incompatible.
+  // Note: Named "Establish" to avoid conflict with gRPC client "connect" method.
+  rpc Establish(Hello) returns (EstablishResponse);
+
+  // Graceful disconnect with optional reason.
+  rpc Disconnect(DisconnectRequest) returns (DisconnectResponse);
+
+  // Ping/heartbeat for connection health monitoring.
+  rpc Ping(PingRequest) returns (PingResponse);
+}
+
+// ============================================================================
+// HELLO (Client -> Daemon)
+// ============================================================================
+
+// Initial handshake message from client to daemon.
+// Must be the first message on any new connection.
+message Hello {
+  // Protocol version the client implements (e.g., "1.0.0").
+  string protocol_version = 1;
+
+  // Unique identifier for this client instance (UUID).
+  // Used for session tracking and duplicate detection.
+  string client_id = 2;
+
+  // Human-readable client name (e.g., "Gouide Desktop", "Gouide CLI").
+  string client_name = 3;
+
+  // Client version string (e.g., "0.1.0-alpha").
+  string client_version = 4;
+
+  // Client capabilities for feature negotiation.
+  Capabilities capabilities = 5;
+
+  // Optional: reconnection token from previous Welcome.
+  // Allows daemon to restore session state on reconnect.
+  string reconnect_token = 6;
+}
+
+// ============================================================================
+// WELCOME (Daemon -> Client)
+// ============================================================================
+
+// Successful handshake response from daemon.
+// Contains session parameters and daemon metadata.
+message Welcome {
+  // Protocol version the daemon implements.
+  string protocol_version = 1;
+
+  // Unique identifier for this daemon instance.
+  string daemon_id = 2;
+
+  // Daemon version string.
+  string daemon_version = 3;
+
+  // Workspace limits for this connection.
+  WorkspaceLimits workspace_limits = 4;
+
+  // Token for session restoration on reconnect.
+  // Client should store and send in Hello.reconnect_token.
+  string reconnect_token = 5;
+
+  // Negotiated capabilities (intersection of client and daemon caps).
+  Capabilities negotiated_capabilities = 6;
+
+  // Session timeout in seconds (client should ping before expiry).
+  uint32 session_timeout_seconds = 7;
+
+  // Server time for clock skew detection (optional).
+  Timestamp server_time = 8;
+}
+
+// ============================================================================
+// ESTABLISH RESPONSE
+// ============================================================================
+
+// Response to Establish RPC.
+message EstablishResponse {
+  // Result of the connection attempt.
+  oneof result {
+    Welcome welcome = 1;
+    HandshakeError error = 2;
+  }
+}
+
+// ============================================================================
+// HANDSHAKE ERRORS
+// ============================================================================
+
+// Handshake failure reasons.
+enum HandshakeErrorCode {
+  HANDSHAKE_ERROR_CODE_UNSPECIFIED = 0;
+  // Protocol version mismatch.
+  HANDSHAKE_ERROR_CODE_VERSION_MISMATCH = 1;
+  // Client ID already connected.
+  HANDSHAKE_ERROR_CODE_DUPLICATE_CLIENT = 2;
+  // Daemon at capacity.
+  HANDSHAKE_ERROR_CODE_CAPACITY_EXCEEDED = 3;
+  // Authentication required (future).
+  HANDSHAKE_ERROR_CODE_AUTH_REQUIRED = 4;
+  // Invalid reconnect token.
+  HANDSHAKE_ERROR_CODE_INVALID_TOKEN = 5;
+}
+
+// Handshake error returned instead of Welcome on failure.
+// Client must disconnect and may retry with different parameters.
+message HandshakeError {
+  // Error code for programmatic handling.
+  HandshakeErrorCode code = 1;
+
+  // Human-readable error message.
+  string message = 2;
+
+  // For VERSION_MISMATCH: versions supported by daemon.
+  repeated string supported_versions = 3;
+
+  // Retry hint.
+  RetryHint retry_hint = 4;
+}
+
+// ============================================================================
+// DISCONNECT
+// ============================================================================
+
+// Request to gracefully disconnect.
+message DisconnectRequest {
+  // Optional reason for disconnect.
+  string reason = 1;
+}
+
+// Disconnect acknowledgment.
+message DisconnectResponse {
+  // Success indicator.
+  bool success = 1;
+}
+
+// ============================================================================
+// PING/HEARTBEAT
+// ============================================================================
+
+// Ping request for connection health monitoring.
+message PingRequest {
+  // Client timestamp for latency measurement.
+  Timestamp client_time = 1;
+}
+
+// Ping response.
+message PingResponse {
+  // Echo of client timestamp.
+  Timestamp client_time = 1;
+  // Daemon timestamp.
+  Timestamp server_time = 2;
+}
+
+// ============================================================================
+// CONTROL SERVICE
+// ============================================================================
+
+// Control service for cross-cutting operations.
+service Control {
+  // Cancel a pending request by ID.
+  // Works for any long-running operation.
+  rpc Cancel(CancelRequest) returns (CancelResponse);
+}
+
+// Request to cancel a pending operation.
+message CancelRequest {
+  // ID of the request to cancel.
+  RequestId request_id = 1;
+}
+
+// Cancellation response.
+message CancelResponse {
+  // Whether cancellation was successful.
+  bool cancelled = 1;
+  // If not cancelled, reason why.
+  string reason = 2;
+}

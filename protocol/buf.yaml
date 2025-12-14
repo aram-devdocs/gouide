@@ -1,0 +1,31 @@
+# Gouide Protocol - Buf Configuration
+# See: https://buf.build/docs/configuration/v2/buf-yaml
+
+version: v2
+
+modules:
+  - path: .
+    name: buf.build/gouide/protocol
+
+lint:
+  use:
+    - STANDARD
+    - COMMENTS
+  except:
+    # Allow short names for common types
+    - PACKAGE_VERSION_SUFFIX
+  enum_zero_value_suffix: _UNSPECIFIED
+  rpc_allow_same_request_response: false
+  rpc_allow_google_protobuf_empty_requests: false
+  rpc_allow_google_protobuf_empty_responses: false
+  service_suffix: ""
+
+breaking:
+  use:
+    - FILE
+  except:
+    # Allow comment changes without breaking change detection
+    - FIELD_SAME_DOCUMENTATION
+    - MESSAGE_SAME_DOCUMENTATION
+    - SERVICE_SAME_DOCUMENTATION
+    - RPC_SAME_DOCUMENTATION

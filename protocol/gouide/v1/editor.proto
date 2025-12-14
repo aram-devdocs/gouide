@@ -1,0 +1,433 @@
+// Gouide Protocol - Editor Operations
+// Version: 1.0.0
+//
+// EDITOR OPERATIONS:
+// - Text edits with OT-style versioning
+// - Syntax highlighting (token-based)
+// - Diagnostics from LSP/linters
+//
+// STREAMING SEMANTICS:
+// - WatchBufferChanges: external changes (from disk/other clients)
+// - WatchDiagnostics: incremental diagnostic updates per file
+// - WatchSyntaxTokens: syntax tokens for visible ranges
+
+syntax = "proto3";
+
+package gouide.v1;
+
+import "gouide/v1/common.proto";
+
+// ============================================================================
+// EDITOR SERVICE
+// ============================================================================
+
+// Editor service for text editing and enrichment.
+service Editor {
+  // Apply text edits to a buffer.
+  rpc ApplyEdits(ApplyEditsRequest) returns (ApplyEditsResponse);
+
+  // Get syntax highlighting tokens for a range.
+  rpc GetSyntaxTokens(GetSyntaxTokensRequest) returns (GetSyntaxTokensResponse);
+
+  // Subscribe to syntax token changes (for visible range).
+  rpc WatchSyntaxTokens(WatchSyntaxTokensRequest) returns (stream SyntaxTokensEvent);
+
+  // Get diagnostics for a file.
+  rpc GetDiagnostics(GetDiagnosticsRequest) returns (GetDiagnosticsResponse);
+
+  // Subscribe to diagnostic changes.
+  rpc WatchDiagnostics(WatchDiagnosticsRequest) returns (stream DiagnosticsEvent);
+
+  // Subscribe to external buffer changes.
+  rpc WatchBufferChanges(WatchBufferChangesRequest) returns (stream BufferChangeEvent);
+
+  // Request formatting for buffer.
+  rpc FormatBuffer(FormatBufferRequest) returns (FormatBufferResponse);
+
+  // Request formatting for selection.
+  rpc FormatSelection(FormatSelectionRequest) returns (FormatSelectionResponse);
+}
+
+// ============================================================================
+// TEXT EDITS
+// ============================================================================
+
+// A single text edit operation.
+message TextEdit {
+  // Range to replace (empty range = insert at position).
+  Range range = 1;
+
+  // New text to insert (empty = delete range).
+  string new_text = 2;
+}
+
+// Request to apply edits.
+message ApplyEditsRequest {
+  // Request ID for cancellation/idempotency.
+  RequestId request_id = 1;
+  // Buffer to edit.
+  BufferId buffer_id = 2;
+
+  // Edits to apply (applied in order).
+  repeated TextEdit edits = 3;
+
+  // Expected buffer version (optimistic concurrency).
+  uint64 expected_version = 4;
+
+  // Whether to create an undo checkpoint.
+  bool create_undo_checkpoint = 5;
+
+  // Optional: edit reason for undo stack labeling.
+  string edit_reason = 6;
+}
+
+// Response to ApplyEdits.
+message ApplyEditsResponse {
+  // Result of the operation.
+  oneof result {
+    ApplyEditsSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful edit application result.
+message ApplyEditsSuccess {
+  // New buffer version after edits.
+  uint64 version = 1;
+
+  // Cursor positions after edits (for multi-cursor support).
+  repeated Position cursors = 2;
+
+  // Whether undo checkpoint was created.
+  bool undo_checkpoint_created = 3;
+}
+
+// ============================================================================
+// SYNTAX HIGHLIGHTING
+// ============================================================================
+
+// Token types for syntax highlighting (simplified TextMate-compatible).
+enum TokenType {
+  TOKEN_TYPE_UNSPECIFIED = 0;
+  TOKEN_TYPE_COMMENT = 1;
+  TOKEN_TYPE_STRING = 2;
+  TOKEN_TYPE_KEYWORD = 3;
+  TOKEN_TYPE_NUMBER = 4;
+  TOKEN_TYPE_REGEXP = 5;
+  TOKEN_TYPE_OPERATOR = 6;
+  TOKEN_TYPE_NAMESPACE = 7;
+  TOKEN_TYPE_TYPE = 8;
+  TOKEN_TYPE_STRUCT = 9;
+  TOKEN_TYPE_CLASS = 10;
+  TOKEN_TYPE_INTERFACE = 11;
+  TOKEN_TYPE_ENUM = 12;
+  TOKEN_TYPE_ENUM_MEMBER = 13;
+  TOKEN_TYPE_TYPE_PARAMETER = 14;
+  TOKEN_TYPE_FUNCTION = 15;
+  TOKEN_TYPE_METHOD = 16;
+  TOKEN_TYPE_MACRO = 17;
+  TOKEN_TYPE_VARIABLE = 18;
+  TOKEN_TYPE_PARAMETER = 19;
+  TOKEN_TYPE_PROPERTY = 20;
+  TOKEN_TYPE_LABEL = 21;
+  TOKEN_TYPE_PUNCTUATION = 22;
+}
+
+// Token modifiers (can be combined as bitmask).
+enum TokenModifier {
+  TOKEN_MODIFIER_UNSPECIFIED = 0;
+  TOKEN_MODIFIER_DECLARATION = 1;
+  TOKEN_MODIFIER_DEFINITION = 2;
+  TOKEN_MODIFIER_READONLY = 4;
+  TOKEN_MODIFIER_STATIC = 8;
+  TOKEN_MODIFIER_DEPRECATED = 16;
+  TOKEN_MODIFIER_ABSTRACT = 32;
+  TOKEN_MODIFIER_ASYNC = 64;
+  TOKEN_MODIFIER_MODIFICATION = 128;
+  TOKEN_MODIFIER_DOCUMENTATION = 256;
+  TOKEN_MODIFIER_DEFAULT_LIBRARY = 512;
+}
+
+// A syntax token.
+message SyntaxToken {
+  // Line number (0-based).
+  uint32 line = 1;
+  // Start character (0-based).
+  uint32 start_character = 2;
+  // Token length.
+  uint32 length = 3;
+  // Token type.
+  TokenType token_type = 4;
+  // Token modifiers (bitmask of TokenModifier values).
+  uint32 modifiers = 5;
+}
+
+// Request syntax tokens for a range.
+message GetSyntaxTokensRequest {
+  // Buffer to query.
+  BufferId buffer_id = 1;
+
+  // Range to tokenize (required).
+  Range range = 2;
+}
+
+// Response to GetSyntaxTokens.
+message GetSyntaxTokensResponse {
+  // Result of the operation.
+  oneof result {
+    GetSyntaxTokensSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful syntax tokens retrieval.
+message GetSyntaxTokensSuccess {
+  // Tokens in the range.
+  repeated SyntaxToken tokens = 1;
+
+  // Buffer version these tokens are for.
+  uint64 version = 2;
+
+  // Actual range covered (may be expanded).
+  Range range = 3;
+}
+
+// Subscribe to syntax token changes.
+message WatchSyntaxTokensRequest {
+  // Buffer to watch.
+  BufferId buffer_id = 1;
+
+  // Visible range to watch (tokens outside this range may be omitted).
+  Range visible_range = 2;
+}
+
+// Streaming syntax token updates.
+message SyntaxTokensEvent {
+  // Stream metadata.
+  StreamMeta meta = 1;
+
+  // Range that was re-tokenized.
+  Range range = 2;
+
+  // Tokens in the range.
+  repeated SyntaxToken tokens = 3;
+
+  // Buffer version.
+  uint64 version = 4;
+}
+
+// ============================================================================
+// DIAGNOSTICS
+// ============================================================================
+
+// Diagnostic severity (LSP-compatible).
+enum DiagnosticSeverity {
+  DIAGNOSTIC_SEVERITY_UNSPECIFIED = 0;
+  DIAGNOSTIC_SEVERITY_ERROR = 1;
+  DIAGNOSTIC_SEVERITY_WARNING = 2;
+  DIAGNOSTIC_SEVERITY_INFO = 3;
+  DIAGNOSTIC_SEVERITY_HINT = 4;
+}
+
+// Diagnostic tag (LSP-compatible).
+enum DiagnosticTag {
+  DIAGNOSTIC_TAG_UNSPECIFIED = 0;
+  // Unused code.
+  DIAGNOSTIC_TAG_UNNECESSARY = 1;
+  // Deprecated symbol.
+  DIAGNOSTIC_TAG_DEPRECATED = 2;
+}
+
+// Related diagnostic information.
+message DiagnosticRelatedInformation {
+  // File containing the related information.
+  FileId file_id = 1;
+  // Range within the file.
+  Range range = 2;
+  // Related message.
+  string message = 3;
+}
+
+// A diagnostic message.
+message Diagnostic {
+  // Range of the diagnostic.
+  Range range = 1;
+
+  // Severity level.
+  DiagnosticSeverity severity = 2;
+
+  // Diagnostic code (e.g., "TS2304").
+  string code = 3;
+
+  // Source (e.g., "typescript", "eslint").
+  string source = 4;
+
+  // Human-readable message.
+  string message = 5;
+
+  // Related information.
+  repeated DiagnosticRelatedInformation related_information = 6;
+
+  // Tags.
+  repeated DiagnosticTag tags = 7;
+
+  // Optional: quick fix actions available.
+  bool has_quick_fixes = 8;
+}
+
+// Request diagnostics for a file.
+message GetDiagnosticsRequest {
+  // Buffer to query.
+  BufferId buffer_id = 1;
+}
+
+// Response to GetDiagnostics.
+message GetDiagnosticsResponse {
+  // Result of the operation.
+  oneof result {
+    GetDiagnosticsSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful diagnostics retrieval.
+message GetDiagnosticsSuccess {
+  // Diagnostics for the buffer.
+  repeated Diagnostic diagnostics = 1;
+  // Buffer version.
+  uint64 version = 2;
+}
+
+// Subscribe to diagnostics.
+message WatchDiagnosticsRequest {
+  // Watch specific buffer, or all buffers in workspace.
+  oneof scope {
+    BufferId buffer_id = 1;
+    WorkspaceId workspace_id = 2;
+  }
+}
+
+// Streaming diagnostic updates.
+message DiagnosticsEvent {
+  // Stream metadata.
+  StreamMeta meta = 1;
+
+  // File these diagnostics are for.
+  FileId file_id = 2;
+
+  // Diagnostics for this file (SNAPSHOT or full replacement per file).
+  // Note: diagnostics are always sent as full set per file, not deltas.
+  repeated Diagnostic diagnostics = 3;
+
+  // Buffer version if available.
+  uint64 version = 4;
+}
+
+// ============================================================================
+// BUFFER CHANGES (EXTERNAL)
+// ============================================================================
+
+// Buffer change types for external modifications.
+enum BufferChangeType {
+  BUFFER_CHANGE_TYPE_UNSPECIFIED = 0;
+  // File was modified externally.
+  BUFFER_CHANGE_TYPE_MODIFIED = 1;
+  // File was deleted.
+  BUFFER_CHANGE_TYPE_DELETED = 2;
+  // File was renamed (check file_id in buffer).
+  BUFFER_CHANGE_TYPE_RENAMED = 3;
+  // Permissions changed.
+  BUFFER_CHANGE_TYPE_PERMISSIONS = 4;
+}
+
+// Subscribe to external buffer changes (disk changes, other clients).
+message WatchBufferChangesRequest {
+  // Buffer to watch.
+  BufferId buffer_id = 1;
+}
+
+// External buffer change event.
+message BufferChangeEvent {
+  // Stream metadata.
+  StreamMeta meta = 1;
+
+  // Type of change.
+  BufferChangeType change_type = 2;
+
+  // For MODIFIED: the new content (if small enough).
+  string content = 3;
+
+  // For MODIFIED: whether content was truncated (fetch separately).
+  bool content_truncated = 4;
+
+  // New version.
+  uint64 version = 5;
+
+  // File modified time.
+  Timestamp modified_at = 6;
+}
+
+// ============================================================================
+// FORMATTING
+// ============================================================================
+
+// Formatting options.
+message FormattingOptions {
+  // Spaces per tab.
+  uint32 tab_size = 1;
+  // Insert spaces instead of tabs.
+  bool insert_spaces = 2;
+  // Trim trailing whitespace.
+  bool trim_trailing_whitespace = 3;
+  // Insert final newline.
+  bool insert_final_newline = 4;
+  // Trim final newlines.
+  bool trim_final_newlines = 5;
+}
+
+// Request to format entire buffer.
+message FormatBufferRequest {
+  // Request ID for cancellation/idempotency.
+  RequestId request_id = 1;
+  // Buffer to format.
+  BufferId buffer_id = 2;
+
+  // Formatting options.
+  FormattingOptions options = 3;
+}
+
+// Request to format selection.
+message FormatSelectionRequest {
+  // Request ID for cancellation/idempotency.
+  RequestId request_id = 1;
+  // Buffer to format.
+  BufferId buffer_id = 2;
+  // Range to format.
+  Range range = 3;
+  // Formatting options.
+  FormattingOptions options = 4;
+}
+
+// Response to FormatBuffer.
+message FormatBufferResponse {
+  // Result of the operation.
+  oneof result {
+    FormatSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Response to FormatSelection.
+message FormatSelectionResponse {
+  // Result of the operation.
+  oneof result {
+    FormatSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+// Successful formatting result.
+message FormatSuccess {
+  // Edits to apply for formatting.
+  repeated TextEdit edits = 1;
+}

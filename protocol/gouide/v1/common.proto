@@ -1,0 +1,217 @@
+// Gouide Protocol - Common Types
+// Version: 1.0.0
+//
+// VERSIONING POLICY:
+// - This package uses semantic versioning (v1, v2, etc.)
+// - Field numbers are never reused after removal
+// - New optional fields may be added without version bump
+// - Removing or renaming fields requires a major version bump
+// - Breaking changes require migration to a new package version (gouide.v2)
+//
+// COMPATIBILITY RULES:
+// - All fields added after v1.0.0 must be optional or have default values
+// - Enum values may only be added, never removed or renumbered
+// - Reserved field numbers document removed fields for safety
+
+syntax = "proto3";
+
+package gouide.v1;
+
+// ============================================================================
+// REQUEST TRACKING
+// ============================================================================
+
+// Unique identifier for requests enabling cancellation and idempotency.
+// Clients must generate unique request_ids for all mutating/long-running operations.
+message RequestId {
+  // Client-generated unique identifier (UUID v4 recommended, or monotonic counter).
+  string value = 1;
+}
+
+// ============================================================================
+// TIMESTAMPS
+// ============================================================================
+
+// High-precision timestamp for event ordering and cache validation.
+message Timestamp {
+  // Seconds since Unix epoch (UTC).
+  int64 seconds = 1;
+  // Nanoseconds within the second [0, 999999999].
+  int32 nanos = 2;
+}
+
+// ============================================================================
+// ERROR HANDLING
+// ============================================================================
+
+// Severity level for errors and diagnostics.
+enum Severity {
+  SEVERITY_UNSPECIFIED = 0;
+  SEVERITY_INFO = 1;
+  SEVERITY_WARNING = 2;
+  SEVERITY_ERROR = 3;
+  SEVERITY_FATAL = 4;
+}
+
+// Hint for clients about retry behavior.
+message RetryHint {
+  // Whether the operation is retryable.
+  bool retryable = 1;
+  // Suggested delay before retry in milliseconds.
+  uint32 retry_after_ms = 2;
+}
+
+// Structured error returned from daemon operations.
+// Clients should display user_message; code enables programmatic handling.
+message Error {
+  // Machine-readable error code (e.g., "FILE_NOT_FOUND", "PERMISSION_DENIED").
+  string code = 1;
+  // Human-readable message for display.
+  string user_message = 2;
+  // Technical details for logging/debugging (not for display).
+  string details = 3;
+  // Error severity.
+  Severity severity = 4;
+  // Optional: source of the error (module or operation that failed).
+  string source = 5;
+  // Optional: retry hint.
+  RetryHint retry_hint = 6;
+}
+
+// ============================================================================
+// PAGINATION
+// ============================================================================
+
+// Cursor-based pagination token.
+// Daemon returns page_token for continuation; client sends it in next request.
+message PageToken {
+  // Opaque cursor token from previous response.
+  string value = 1;
+}
+
+// Pagination request parameters.
+message PaginationRequest {
+  // Maximum items to return (daemon may return fewer).
+  // If 0, daemon uses recommended_page_size from Welcome.
+  uint32 page_size = 1;
+  // Token from previous response for continuation.
+  PageToken page_token = 2;
+}
+
+// Pagination response metadata.
+message PaginationResponse {
+  // Token for fetching next page (empty if no more results).
+  PageToken next_page_token = 1;
+  // Total count if known (may be 0 if unknown or expensive to compute).
+  uint64 total_count = 2;
+  // Whether total_count is an exact count or estimate.
+  bool total_count_exact = 3;
+}
+
+// ============================================================================
+// STREAMING METADATA
+// ============================================================================
+
+// Type of delta update for streaming responses.
+enum DeltaType {
+  DELTA_TYPE_UNSPECIFIED = 0;
+  // Full snapshot replacing all previous state.
+  DELTA_TYPE_SNAPSHOT = 1;
+  // Incremental add.
+  DELTA_TYPE_ADD = 2;
+  // Incremental update to existing item.
+  DELTA_TYPE_UPDATE = 3;
+  // Incremental remove.
+  DELTA_TYPE_REMOVE = 4;
+  // Reset signal - client must re-request snapshot.
+  // Sent when daemon dropped intermediate updates due to backpressure.
+  DELTA_TYPE_RESET_REQUIRED = 5;
+}
+
+// Metadata for stream messages enabling gap detection and recovery.
+// Every streaming response must include this for reliable progressive rendering.
+message StreamMeta {
+  // Monotonically increasing sequence number for gap detection.
+  // Clients should request snapshot if gaps detected.
+  uint64 sequence = 1;
+  // Stream identifier for subscription management.
+  string stream_id = 2;
+  // Delta type for this message.
+  DeltaType delta_type = 3;
+  // Timestamp of this update.
+  Timestamp timestamp = 4;
+  // Whether this is the final message in the stream.
+  bool is_final = 5;
+  // Dedupe key for coalescing repeated updates (optional).
+  string dedupe_key = 6;
+}
+
+// ============================================================================
+// POSITION & RANGE
+// ============================================================================
+
+// Position in a text document (0-based line and character).
+message Position {
+  // 0-based line number.
+  uint32 line = 1;
+  // 0-based character offset (UTF-16 code units for LSP compatibility).
+  uint32 character = 2;
+}
+
+// Range in a text document.
+message Range {
+  // Start position (inclusive).
+  Position start = 1;
+  // End position (exclusive).
+  Position end = 2;
+}
+
+// ============================================================================
+// FILE IDENTIFICATION
+// ============================================================================
+
+// Unique identifier for a file within a workspace.
+message FileId {
+  // Workspace-relative path (forward slashes, no leading slash).
+  string path = 1;
+}
+
+// Unique identifier for an open buffer.
+message BufferId {
+  // Client-generated unique identifier for the buffer.
+  string value = 1;
+}
+
+// Workspace session identifier.
+message WorkspaceId {
+  // Daemon-generated unique identifier for the workspace session.
+  string value = 1;
+}
+
+// ============================================================================
+// CAPABILITIES
+// ============================================================================
+
+// Feature flags for capability negotiation during handshake.
+message Capabilities {
+  // Client supports chunked responses.
+  bool supports_chunking = 1;
+  // Client supports sequence-based gap detection.
+  bool supports_sequences = 2;
+  // Client supports binary delta encoding (future).
+  bool supports_binary_deltas = 3;
+  // Client supports compression (future).
+  bool supports_compression = 4;
+}
+
+// Limits advertised by daemon during handshake.
+message WorkspaceLimits {
+  // Maximum message size in bytes.
+  uint32 max_message_bytes = 1;
+  // Maximum in-flight requests.
+  uint32 max_in_flight = 2;
+  // Recommended page size for pagination.
+  uint32 recommended_page_size = 3;
+  // Maximum concurrent streams per client.
+  uint32 max_concurrent_streams = 4;
+}
