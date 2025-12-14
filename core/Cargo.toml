@@ -2,12 +2,12 @@
 resolver = "2"
 members = [
     "crates/gouide-protocol",
+    "crates/gouide-daemon",
+    "crates/gouide-workspace",
 ]
 
 # Future members will be added here:
 # members = [
-#     "crates/gouide-daemon",
-#     "crates/gouide-workspace",
 #     "crates/gouide-fs",
 #     "crates/gouide-index",
 #     "crates/gouide-search",
@@ -36,6 +36,17 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 prost = "0.13"
 tonic = { version = "0.12", default-features = false }
 tonic-build = "0.12"
+
+# Additional daemon dependencies
+uuid = { version = "1.11", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+fs4 = "0.13"
+tokio-stream = { version = "0.1", features = ["net"] }
+hyper = { version = "1.5", features = ["server", "http2"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+http-body-util = "0.1"
+tower = { version = "0.5", features = ["util"] }
+tower-service = "0.3"
 
 [profile.dev]
 opt-level = 0

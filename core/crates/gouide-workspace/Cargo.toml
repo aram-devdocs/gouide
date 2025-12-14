@@ -1,0 +1,10 @@
+[package]
+name = "gouide-workspace"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Gouide workspace model and buffer management"
+
+[dependencies]
+thiserror = { workspace = true }

@@ -13,7 +13,7 @@ todos:
     status: done
   - id: scaffold-core-daemon
     content: Scaffold Rust workspace in `core/` with `gouide-daemon` exposing the protocol over local IPC (UDS/named pipe).
-    status: pending
+    status: done
     dependencies:
       - define-protocol
   - id: scaffold-desktop-app
@@ -500,16 +500,21 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Added `scripts/install-deps.sh` for cross-platform dependency installation
 - Verified: `pnpm codegen` generates TS types, `cargo build -p gouide-protocol` compiles Rust types
 
-### TODO 4: Scaffold Core Daemon ⬜ NEXT
-- gouide-protocol crate already created in TODO 3
-- Create `core/crates/gouide-daemon/` - main binary with:
-  - UDS/named pipe listener
-  - Hello/Welcome handshake
-  - Graceful shutdown
-- Add `core/crates/gouide-workspace/` stub
-- Verify `cargo build` and `cargo test` work
+### TODO 4: Scaffold Core Daemon ✅ DONE
+- Created `core/crates/gouide-daemon/` with:
+  - `transport/unix.rs`: UDS listener with proper permissions (0700 dir, 0600 socket)
+  - `services/handshake.rs`: Handshake service (establish, disconnect, ping)
+  - `services/control.rs`: Control service stub (cancel)
+  - `session/manager.rs`: SessionManager with client tracking, capability negotiation
+  - `discovery/lockfile.rs`: Lock file + JSON metadata for daemon discovery
+  - `shutdown.rs`: Graceful shutdown coordinator (SIGTERM/SIGINT handling)
+  - `server.rs`: gRPC over UDS using hyper + tonic
+  - `config.rs`: DaemonConfig with workspace limits
+- Created `core/crates/gouide-workspace/` stub with WorkspaceError and WorkspaceManager
+- Updated `core/Cargo.toml` with new workspace members and dependencies (uuid, chrono, fs4, hyper, tower)
+- Verified: `cargo build --workspace` and `cargo test --workspace` pass (20 tests)
 
-### TODO 5: Scaffold Desktop App ⬜
+### TODO 5: Scaffold Desktop App ⬜ NEXT
 - Run `pnpm create tauri-app` in `apps/desktop/`
 - Configure Tauri to spawn/attach to daemon
 - Create minimal React shell with sidebar + editor placeholder
