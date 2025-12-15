@@ -35,10 +35,20 @@ impl ShutdownCoordinator {
         {
             use signal::unix::{signal, SignalKind};
 
-            let mut sigterm =
-                signal(SignalKind::terminate()).expect("Failed to register SIGTERM handler");
-            let mut sigint =
-                signal(SignalKind::interrupt()).expect("Failed to register SIGINT handler");
+            let mut sigterm = match signal(SignalKind::terminate()) {
+                Ok(s) => s,
+                Err(e) => {
+                    tracing::error!("Failed to register SIGTERM handler: {e}");
+                    std::process::exit(1);
+                }
+            };
+            let mut sigint = match signal(SignalKind::interrupt()) {
+                Ok(s) => s,
+                Err(e) => {
+                    tracing::error!("Failed to register SIGINT handler: {e}");
+                    std::process::exit(1);
+                }
+            };
 
             tokio::select! {
                 _ = sigterm.recv() => info!("Received SIGTERM"),
@@ -49,9 +59,10 @@ impl ShutdownCoordinator {
 
         #[cfg(windows)]
         {
-            signal::ctrl_c()
-                .await
-                .expect("Failed to listen for Ctrl+C");
+            if let Err(e) = signal::ctrl_c().await {
+                tracing::error!("Failed to listen for Ctrl+C: {e}");
+                std::process::exit(1);
+            }
             info!("Received Ctrl+C");
         }
     }
@@ -74,6 +85,12 @@ impl Default for ShutdownCoordinator {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 mod tests {
     use super::*;
     use std::sync::atomic::{AtomicBool, Ordering};

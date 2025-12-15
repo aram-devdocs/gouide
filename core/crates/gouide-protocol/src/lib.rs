@@ -11,7 +11,11 @@
 
 #![allow(clippy::derive_partial_eq_without_eq)]
 
+/// Generated gouide protocol modules.
+#[allow(clippy::all, missing_docs)]
 pub mod gouide {
+    /// Generated protocol version 1 types.
+    #[allow(clippy::all, missing_docs)]
     pub mod v1 {
         tonic::include_proto!("gouide.v1");
     }

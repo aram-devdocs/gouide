@@ -49,7 +49,8 @@ tower = { version = "0.5", features = ["util"] }
 tower-service = "0.3"
 
 [workspace.lints.rust]
-unsafe_code = "forbid"
+# Deny unsafe code by default, but allow modules to opt-in where necessary (e.g., platform-specific calls)
+unsafe_code = "deny"
 missing_docs = "warn"
 unused_crate_dependencies = "warn"
 unreachable_pub = "warn"
@@ -75,6 +76,13 @@ must_use_candidate = "allow"
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"
 missing_const_for_fn = "allow"
+
+# Allow lints that are problematic in generated code (tonic/prost)
+similar_names = "allow"
+doc_markdown = "allow"
+default_trait_access = "allow"
+too_many_lines = "allow"
+struct_excessive_bools = "allow"
 
 # Correctness (always deny - higher priority than pedantic/nursery)
 correctness = { level = "deny", priority = -2 }

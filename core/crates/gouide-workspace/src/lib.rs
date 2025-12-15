@@ -10,12 +10,15 @@ use thiserror::Error;
 /// Errors that can occur during workspace operations.
 #[derive(Error, Debug)]
 pub enum WorkspaceError {
+    /// Workspace with the given ID was not found.
     #[error("Workspace not found: {0}")]
     NotFound(String),
 
+    /// Buffer with the given ID was not found.
     #[error("Buffer not found: {0}")]
     BufferNotFound(String),
 
+    /// An I/O error occurred during workspace operations.
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 }

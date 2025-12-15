@@ -1,5 +1,8 @@
 //! Gouide daemon entry point.
 
+// Binary doesn't directly use all lib dependencies
+#![allow(unused_crate_dependencies)]
+
 use gouide_daemon::{DaemonConfig, DaemonServer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 

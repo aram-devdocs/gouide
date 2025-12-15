@@ -3,6 +3,9 @@
 //! On Unix systems, we use Unix domain sockets.
 //! On Windows, we use named pipes (future implementation).
 
+// Allow unsafe code for platform-specific libc calls
+#![allow(unsafe_code)]
+
 #[cfg(unix)]
 mod unix;
 
@@ -14,7 +17,7 @@ pub fn default_endpoint_path() -> String {
     #[cfg(unix)]
     {
         let uid = unsafe { libc::getuid() };
-        format!("/tmp/gouide-{}/daemon.sock", uid)
+        format!("/tmp/gouide-{uid}/daemon.sock")
     }
     #[cfg(windows)]
     {
@@ -28,18 +31,24 @@ pub fn default_lock_path() -> String {
     #[cfg(unix)]
     {
         let uid = unsafe { libc::getuid() };
-        format!("/tmp/gouide-{}/daemon.lock", uid)
+        format!("/tmp/gouide-{uid}/daemon.lock")
     }
     #[cfg(windows)]
     {
         let username = std::env::var("USERNAME").unwrap_or_else(|_| "user".to_string());
-        let local_app_data =
-            std::env::var("LOCALAPPDATA").unwrap_or_else(|_| format!(r"C:\Users\{}\AppData\Local", username));
+        let local_app_data = std::env::var("LOCALAPPDATA")
+            .unwrap_or_else(|_| format!(r"C:\Users\{}\AppData\Local", username));
         format!(r"{}\Gouide\daemon.lock", local_app_data)
     }
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 mod tests {
     use super::*;
 

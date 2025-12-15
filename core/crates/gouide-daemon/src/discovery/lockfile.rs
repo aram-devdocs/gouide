@@ -3,6 +3,9 @@
 //! The lock file prevents multiple daemons from running simultaneously
 //! and provides metadata for clients to discover the running daemon.
 
+// Allow unsafe code for platform-specific libc calls
+#![allow(unsafe_code)]
+
 use std::fs::{self, File, OpenOptions};
 use std::path::PathBuf;
 
@@ -63,11 +66,7 @@ impl LockFile {
         // Try exclusive lock (non-blocking)
         // fs4 0.13 returns Ok(true) if acquired, Ok(false) if already locked
         let acquired = file.try_lock_exclusive().map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to acquire daemon lock at {}: {}",
-                path.display(),
-                e
-            )
+            anyhow::anyhow!("Failed to acquire daemon lock at {}: {}", path.display(), e)
         })?;
 
         if !acquired {
@@ -148,7 +147,8 @@ impl Drop for LockFile {
 /// Read existing daemon metadata (for client discovery).
 ///
 /// Returns None if the metadata doesn't exist or the daemon is not running.
-pub fn read_metadata(lock_path: &str) -> anyhow::Result<Option<DaemonMetadata>> {
+#[allow(dead_code)]
+pub(super) fn read_metadata(lock_path: &str) -> anyhow::Result<Option<DaemonMetadata>> {
     let metadata_path = PathBuf::from(lock_path).with_extension("json");
 
     if !metadata_path.exists() {
@@ -175,9 +175,13 @@ pub fn read_metadata(lock_path: &str) -> anyhow::Result<Option<DaemonMetadata>> 
 
 /// Check if a process is still running.
 #[cfg(unix)]
+#[allow(dead_code, clippy::cast_possible_wrap)]
 fn is_process_alive(pid: u32) -> bool {
     // kill with signal 0 checks if process exists without sending a signal
-    unsafe { libc::kill(pid as i32, 0) == 0 }
+    #[allow(clippy::cast_possible_wrap)]
+    unsafe {
+        libc::kill(pid as i32, 0) == 0
+    }
 }
 
 #[cfg(windows)]
@@ -199,6 +203,12 @@ fn is_process_alive(pid: u32) -> bool {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 mod tests {
     use super::*;
     use tempfile::TempDir;

@@ -20,12 +20,12 @@ impl UnixListener {
     ///
     /// Creates the parent directory with user-only permissions (0700),
     /// removes any stale socket file, and binds the listener.
-    pub async fn bind() -> anyhow::Result<Self> {
-        Self::bind_at(&default_endpoint_path()).await
+    pub fn bind() -> anyhow::Result<Self> {
+        Self::bind_at(&default_endpoint_path())
     }
 
     /// Bind to a specific socket path.
-    pub async fn bind_at(path: &str) -> anyhow::Result<Self> {
+    pub fn bind_at(path: &str) -> anyhow::Result<Self> {
         let path = PathBuf::from(path);
 
         // Ensure parent directory exists with correct permissions
@@ -87,6 +87,12 @@ impl Drop for UnixListener {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 mod tests {
     use super::*;
     use tempfile::TempDir;
@@ -96,9 +102,7 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let socket_path = temp_dir.path().join("test.sock");
 
-        let listener = UnixListener::bind_at(socket_path.to_str().unwrap())
-            .await
-            .unwrap();
+        let listener = UnixListener::bind_at(socket_path.to_str().unwrap()).unwrap();
 
         assert!(socket_path.exists());
         assert_eq!(listener.endpoint(), socket_path.to_string_lossy());
@@ -122,9 +126,7 @@ mod tests {
         assert!(socket_path.exists());
 
         // Binding should remove it and succeed
-        let listener = UnixListener::bind_at(socket_path.to_str().unwrap())
-            .await
-            .unwrap();
+        let listener = UnixListener::bind_at(socket_path.to_str().unwrap()).unwrap();
 
         assert!(socket_path.exists());
         drop(listener);

@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
-use gouide_protocol::{Capabilities, HandshakeError, HandshakeErrorCode, Hello};
+use gouide_protocol::{Capabilities, EstablishRequest, HandshakeError, HandshakeErrorCode};
 use tokio::sync::RwLock;
 use tracing::{info, warn};
 use uuid::Uuid;
@@ -31,8 +31,8 @@ pub struct ClientSession {
 }
 
 impl ClientSession {
-    /// Create a new session from a Hello message.
-    fn new(hello: &Hello, config: &DaemonConfig) -> Self {
+    /// Create a new session from an EstablishRequest message.
+    fn new(hello: &EstablishRequest, config: &DaemonConfig) -> Self {
         let now = Utc::now();
         Self {
             client_id: hello.client_id.clone(),
@@ -43,7 +43,7 @@ impl ClientSession {
             last_activity: now,
             negotiated_capabilities: negotiate_capabilities(
                 hello.capabilities.as_ref(),
-                &config.daemon_capabilities(),
+                config.daemon_capabilities(),
             ),
         }
     }
@@ -55,16 +55,13 @@ impl ClientSession {
 }
 
 /// Negotiate capabilities between client and daemon.
-fn negotiate_capabilities(client: Option<&Capabilities>, daemon: &Capabilities) -> Capabilities {
-    match client {
-        Some(c) => Capabilities {
-            supports_chunking: c.supports_chunking && daemon.supports_chunking,
-            supports_sequences: c.supports_sequences && daemon.supports_sequences,
-            supports_binary_deltas: c.supports_binary_deltas && daemon.supports_binary_deltas,
-            supports_compression: c.supports_compression && daemon.supports_compression,
-        },
-        None => Capabilities::default(),
-    }
+fn negotiate_capabilities(client: Option<&Capabilities>, daemon: Capabilities) -> Capabilities {
+    client.map_or_else(Capabilities::default, |c| Capabilities {
+        supports_chunking: c.supports_chunking && daemon.supports_chunking,
+        supports_sequences: c.supports_sequences && daemon.supports_sequences,
+        supports_binary_deltas: c.supports_binary_deltas && daemon.supports_binary_deltas,
+        supports_compression: c.supports_compression && daemon.supports_compression,
+    })
 }
 
 /// Manages all connected client sessions.
@@ -85,7 +82,10 @@ impl SessionManager {
     /// Register a new client session after successful handshake validation.
     ///
     /// Returns the session on success, or a HandshakeError on failure.
-    pub async fn register(&self, hello: &Hello) -> Result<ClientSession, HandshakeError> {
+    pub async fn register(
+        &self,
+        hello: &EstablishRequest,
+    ) -> Result<ClientSession, HandshakeError> {
         let mut sessions = self.sessions.write().await;
 
         // Check capacity
@@ -135,7 +135,11 @@ impl SessionManager {
             client_name = %session.client_name,
             "Client session registered"
         );
-        sessions.insert(hello.client_id.clone(), Arc::new(RwLock::new(session.clone())));
+        sessions.insert(
+            hello.client_id.clone(),
+            Arc::new(RwLock::new(session.clone())),
+        );
+        drop(sessions);
 
         Ok(session)
     }
@@ -177,11 +181,17 @@ impl SessionManager {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 mod tests {
     use super::*;
 
-    fn test_hello(client_id: &str) -> Hello {
-        Hello {
+    fn test_hello(client_id: &str) -> EstablishRequest {
+        EstablishRequest {
             protocol_version: "1.0.0".to_string(),
             client_id: client_id.to_string(),
             client_name: "Test Client".to_string(),

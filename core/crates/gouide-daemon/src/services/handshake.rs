@@ -2,9 +2,9 @@
 
 use std::sync::Arc;
 
-use gouide_protocol::handshake_server::Handshake;
+use gouide_protocol::handshake_service_server::HandshakeService as HandshakeServiceTrait;
 use gouide_protocol::{
-    establish_response, DisconnectRequest, DisconnectResponse, EstablishResponse, Hello,
+    establish_response, DisconnectRequest, DisconnectResponse, EstablishRequest, EstablishResponse,
     PingRequest, PingResponse, Timestamp, Welcome,
 };
 use tonic::{Request, Response, Status};
@@ -36,10 +36,10 @@ impl HandshakeService {
 }
 
 #[tonic::async_trait]
-impl Handshake for HandshakeService {
+impl HandshakeServiceTrait for HandshakeService {
     async fn establish(
         &self,
-        request: Request<Hello>,
+        request: Request<EstablishRequest>,
     ) -> Result<Response<EstablishResponse>, Status> {
         let hello = request.into_inner();
         info!(
@@ -55,7 +55,7 @@ impl Handshake for HandshakeService {
                     protocol_version: self.config.protocol_version.clone(),
                     daemon_id: self.daemon_id.clone(),
                     daemon_version: env!("CARGO_PKG_VERSION").to_string(),
-                    workspace_limits: Some(self.config.workspace_limits.clone()),
+                    workspace_limits: Some(self.config.workspace_limits),
                     reconnect_token: session.reconnect_token,
                     negotiated_capabilities: Some(session.negotiated_capabilities),
                     session_timeout_seconds: self.config.session_timeout_secs,
@@ -114,11 +114,18 @@ fn current_timestamp() -> Timestamp {
     let now = chrono::Utc::now();
     Timestamp {
         seconds: now.timestamp(),
+        #[allow(clippy::cast_possible_wrap)]
         nanos: now.timestamp_subsec_nanos() as i32,
     }
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 mod tests {
     use super::*;
     use gouide_protocol::Capabilities;
@@ -129,8 +136,8 @@ mod tests {
         HandshakeService::new(session_manager, config, "test-daemon".to_string())
     }
 
-    fn test_hello(client_id: &str) -> Hello {
-        Hello {
+    fn test_hello(client_id: &str) -> EstablishRequest {
+        EstablishRequest {
             protocol_version: "1.0.0".to_string(),
             client_id: client_id.to_string(),
             client_name: "Test Client".to_string(),
@@ -170,7 +177,7 @@ mod tests {
 
         let response = service
             .ping(Request::new(PingRequest {
-                client_time: Some(client_time.clone()),
+                client_time: Some(client_time),
             }))
             .await
             .unwrap();

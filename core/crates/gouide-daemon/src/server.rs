@@ -3,8 +3,8 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use gouide_protocol::control_server::ControlServer;
-use gouide_protocol::handshake_server::HandshakeServer;
+use gouide_protocol::control_service_server::ControlServiceServer;
+use gouide_protocol::handshake_service_server::HandshakeServiceServer;
 use hyper::body::Incoming;
 use hyper::service::service_fn;
 use hyper_util::rt::{TokioExecutor, TokioIo};
@@ -50,7 +50,7 @@ impl DaemonServer {
         let lock = LockFile::acquire()?;
 
         // Create the transport listener
-        let listener = UnixListener::bind().await?;
+        let listener = UnixListener::bind()?;
         let endpoint = listener.endpoint();
 
         // Write metadata for client discovery
@@ -71,8 +71,8 @@ impl DaemonServer {
         let control_service = ControlService::new();
 
         // Build the gRPC router
-        let handshake_server = HandshakeServer::new(handshake_service);
-        let control_server = ControlServer::new(control_service);
+        let handshake_server = HandshakeServiceServer::new(handshake_service);
+        let control_server = ControlServiceServer::new(control_service);
 
         info!(
             endpoint = %endpoint,
@@ -133,7 +133,8 @@ where
             hyper::Request<Incoming>,
             Response = hyper::Response<BoxBody>,
             Error = std::convert::Infallible,
-        > + Clone
+        >
+        + Clone
         + Send
         + 'static
         + NamedService,
@@ -142,7 +143,8 @@ where
             hyper::Request<Incoming>,
             Response = hyper::Response<BoxBody>,
             Error = std::convert::Infallible,
-        > + Clone
+        >
+        + Clone
         + Send
         + 'static
         + NamedService,
@@ -165,11 +167,21 @@ where
             } else if path.starts_with(&format!("/{}/", C::NAME)) {
                 control.oneshot(req).await
             } else {
-                // Unknown service
-                Ok(hyper::Response::builder()
-                    .status(404)
-                    .body(tonic::body::empty_body())
-                    .unwrap())
+                // Unknown service - return 404
+                // This builder operation should never fail for a simple 404
+                #[allow(clippy::option_if_let_else)]
+                Ok(
+                    match hyper::Response::builder()
+                        .status(404)
+                        .body(tonic::body::empty_body())
+                    {
+                        Ok(resp) => resp,
+                        Err(_) => {
+                            // Fallback to a minimal 500 response if 404 build somehow fails
+                            hyper::Response::new(tonic::body::empty_body())
+                        }
+                    },
+                )
             }
         }
     });
@@ -178,12 +190,18 @@ where
         .http2_only()
         .serve_connection(io, service)
         .await
-        .map_err(|e| anyhow::anyhow!("HTTP connection error: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("HTTP connection error: {e}"))?;
 
     Ok(())
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 mod tests {
     use super::*;
 

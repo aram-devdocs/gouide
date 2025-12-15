@@ -1,7 +1,7 @@
 //! Build script for gouide-protocol
 //!
 //! Compiles protobuf definitions from protocol/ into Rust types using tonic-build.
-//! The generated code ends up in OUT_DIR and is included at compile time.
+//! The generated code ends up in `OUT_DIR` and is included at compile time.
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let protos = [
@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Re-run if any proto file changes
     for proto in &protos {
-        println!("cargo:rerun-if-changed={}", proto);
+        println!("cargo:rerun-if-changed={proto}");
     }
 
     tonic_build::configure()

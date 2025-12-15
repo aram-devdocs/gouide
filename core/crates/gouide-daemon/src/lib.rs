@@ -23,6 +23,9 @@
 //! }
 //! ```
 
+// Allow unused dependencies - they're part of our build but not all are used yet
+#![allow(unused_crate_dependencies)]
+
 pub mod config;
 pub mod discovery;
 pub mod server;

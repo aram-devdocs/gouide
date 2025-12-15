@@ -1,6 +1,6 @@
 //! Control service implementation.
 
-use gouide_protocol::control_server::Control;
+use gouide_protocol::control_service_server::ControlService as ControlServiceTrait;
 use gouide_protocol::{CancelRequest, CancelResponse};
 use tonic::{Request, Response, Status};
 use tracing::info;
@@ -25,7 +25,7 @@ impl Default for ControlService {
 }
 
 #[tonic::async_trait]
-impl Control for ControlService {
+impl ControlServiceTrait for ControlService {
     async fn cancel(
         &self,
         request: Request<CancelRequest>,
@@ -46,6 +46,12 @@ impl Control for ControlService {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 mod tests {
     use super::*;
     use gouide_protocol::RequestId;
