@@ -71,8 +71,10 @@ function generateClientId(): string {
  */
 export class GouideClient {
   private readonly transport: CoreTransport;
-  private readonly clientId: string;
-  private readonly clientName: string;
+  /** Unique identifier for this client */
+  readonly clientId: string;
+  /** Human-readable name for this client */
+  readonly clientName: string;
   private state: ConnectionState = { status: "disconnected" };
   private listeners: Set<ClientEventListener> = new Set();
 

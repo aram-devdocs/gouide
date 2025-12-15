@@ -24,7 +24,7 @@ todos:
       - scaffold-core-daemon
   - id: daemon-lifecycle-tray
     content: Implement daemon lifecycle UX (attach-or-spawn, tray/menu-bar indicator, quit-on-close setting, orphan cleanup via lock+metadata).
-    status: pending
+    status: done
     dependencies:
       - scaffold-core-daemon
       - scaffold-desktop-app
@@ -459,6 +459,7 @@ The repo must be “clone and go”, with deterministic codegen and consistent c
 Each TODO is designed to be completed in a single session. Complete in order. The next agent should pick up the next pending TODO.
 
 ### TODO 1: Scaffold Monorepo ✅ DONE
+
 - Created root configs: `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `.gitignore`, `.npmrc`
 - Created `tsconfig.base.json` and `packages/typescript-config/` with base/library/app configs
 - Created directory structure for `apps/`, `packages/`, `core/`, `protocol/`, `tools/`, `docs/`
@@ -467,6 +468,7 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Verified with `pnpm install` - all workspace packages resolved
 
 ### TODO 2: Define Protocol ✅ DONE
+
 - Created `buf.yaml` with lint/breaking rules (STANDARD + COMMENTS, FILE-level breaking)
 - Created `protocol/gouide/v1/common.proto`:
   - RequestId, Timestamp, Error, RetryHint, Severity
@@ -492,6 +494,7 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Added comprehensive versioning policy comments in all protos
 
 ### TODO 3: Codegen Pipeline ✅ DONE
+
 - Created `protocol/buf.gen.yaml` with bufbuild/es + connectrpc/es plugins
 - Updated `packages/protocol/package.json` with @bufbuild/protobuf, @connectrpc/connect deps
 - Created `packages/protocol/tsconfig.json` and barrel exports (index.ts, connect.ts)
@@ -501,6 +504,7 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Verified: `pnpm codegen` generates TS types, `cargo build -p gouide-protocol` compiles Rust types
 
 ### TODO 4: Scaffold Core Daemon ✅ DONE
+
 - Created `core/crates/gouide-daemon/` with:
   - `transport/unix.rs`: UDS listener with proper permissions (0700 dir, 0600 socket)
   - `services/handshake.rs`: Handshake service (establish, disconnect, ping)
@@ -515,6 +519,7 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Verified: `cargo build --workspace` and `cargo test --workspace` pass (20 tests)
 
 ### TODO 5: Scaffold Desktop App ✅ DONE
+
 - Created Tauri 2.x project in `apps/desktop/` with React + Vite frontend
 - Created `apps/desktop/src-tauri/` Rust backend:
   - `bridge/discovery.rs`: Daemon discovery via lock file + process validation
@@ -536,6 +541,7 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Verified: TypeScript compiles, Vite builds, Rust compiles (with system deps)
 
 ### TODO 6: Primitives & Theme Boundaries ✅ DONE
+
 - Created `packages/frontend/shared/theme/src/`:
   - `tokens.ts`: Design tokens (colors, spacing, typography, radii) extracted from existing CSS
   - `css.ts`: CSS variable generator function
@@ -558,14 +564,39 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Added tsconfig.json to: theme, primitives/web, primitives/desktop, ui, hooks, editor, state
 - Verified: `pnpm install`, `pnpm typecheck` pass; ESLint boundary rule blocks disallowed imports
 
-### TODO 7: Daemon Lifecycle & Tray ⬜ NEXT
-- Implement attach-or-spawn logic in Tauri sidecar (connect-only done; spawn TBD)
-- Add tray/menu bar indicator (show when minimized)
-- Add "Quit on close" vs "Minimize to tray" setting
-- ~~Implement lock + metadata file for daemon discovery~~ (done in TODO 4)
-- ~~Handle orphan cleanup (stale pid detection)~~ (done in scripts/daemon.sh)
+### TODO 7: Daemon Lifecycle & Tray ✅ DONE
 
-### TODO 8: CI Contract Enforcement ⬜
+- Created `apps/desktop/src-tauri/src/bridge/lifecycle.rs`:
+  - `get_daemon_path()`: Locates daemon binary (sidecar or dev paths)
+  - `spawn_daemon()`: Starts daemon, waits for socket readiness (3s timeout)
+  - `ensure_daemon()`: Returns `AlreadyRunning | Spawned | Failed`
+  - `stop_daemon()`: Sends SIGTERM for graceful shutdown
+- Created `apps/desktop/src-tauri/src/bridge/tray.rs`:
+  - `create_tray()`: System tray icon with menu
+  - Menu items: "Show Window", "Quit"
+  - Left-click shows window, double-click shows window
+  - "Quit" stops daemon and exits app
+- Created `apps/desktop/src-tauri/src/bridge/settings.rs`:
+  - `AppSettings` struct with `quit_on_close`, `start_minimized`
+  - `load_settings()`/`save_settings()` using tauri-plugin-store
+  - Default: minimize to tray on close
+- Updated `apps/desktop/src-tauri/src/main.rs`:
+  - Added tauri-plugin-store, single-instance plugins
+  - Added `.setup()` to create tray icon
+  - Added `.on_window_event()` to handle close behavior (minimize to tray vs quit)
+- Added new Tauri commands:
+  - `ensure_and_connect`: Attach-or-spawn + connect in one call
+  - `get_settings`/`set_settings`: Settings CRUD
+  - `shutdown_daemon`: Stop daemon gracefully
+- Updated `apps/desktop/src-tauri/tauri.conf.json`: Added `externalBin` for sidecar bundling
+- Updated `apps/desktop/src-tauri/capabilities/default.json`: Added store permissions
+- Created `scripts/prepare-sidecar.sh`: Builds daemon and copies with target triple suffix
+- Updated `packages/core-client/src/tauri.ts`: Added `ensureAndConnect`, settings methods
+- Updated `apps/desktop/src/hooks/useDaemonConnection.tsx`: Uses `ensureAndConnect` for auto-spawn
+- Verified: TypeScript compiles, Rust builds, daemon sidecar prepared
+
+### TODO 8: CI Contract Enforcement ⬜ NEXT
+
 - Add pre-commit hooks: fmt, clippy, lint, typecheck
 - Add buf lint and buf breaking checks
 - Configure GitHub Actions matrix (Windows/macOS/Linux)

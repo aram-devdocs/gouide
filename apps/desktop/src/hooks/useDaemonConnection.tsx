@@ -64,14 +64,20 @@ export function DaemonProvider({ children }: { children: ReactNode }) {
 
   const discoverAndConnect = async () => {
     try {
-      const info = await client.discover();
-      setDaemonInfo(info);
+      setState({ status: "connecting" });
 
-      if (info) {
-        await client.connect();
-      } else {
-        setState({ status: "error", error: "No daemon running" });
-      }
+      // Use ensureAndConnect which will spawn daemon if not running
+      const welcome = await transport.ensureAndConnect(
+        client.clientId,
+        client.clientName
+      );
+
+      // Update state with the welcome info
+      setState({ status: "connected", welcome });
+
+      // Discover daemon info for display
+      const info = await transport.discover();
+      setDaemonInfo(info);
     } catch (e) {
       const error = e instanceof Error ? e.message : String(e);
       setState({ status: "error", error });

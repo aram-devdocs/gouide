@@ -10,6 +10,16 @@ import type { CoreTransport } from "./transport.js";
 import type { DaemonInfo, WelcomeInfo, PingResult } from "./types.js";
 
 /**
+ * Application settings for window behavior.
+ */
+export interface AppSettings {
+  /** If true, closing the window quits the app. If false, minimizes to tray. */
+  quit_on_close: boolean;
+  /** If true, start minimized to tray. */
+  start_minimized: boolean;
+}
+
+/**
  * Tauri-based transport for daemon communication.
  *
  * Uses Tauri's invoke mechanism to call Rust commands that
@@ -37,6 +47,45 @@ export class TauriTransport implements CoreTransport {
 
   async isConnected(): Promise<boolean> {
     return invoke<boolean>("is_connected");
+  }
+
+  // --- Lifecycle and settings methods ---
+
+  /**
+   * Ensure daemon is running and connect to it.
+   *
+   * This is the main entry point for "attach-or-spawn" logic.
+   * If no daemon is running, it will spawn one before connecting.
+   */
+  async ensureAndConnect(
+    clientId: string,
+    clientName: string
+  ): Promise<WelcomeInfo> {
+    return invoke<WelcomeInfo>("ensure_and_connect", {
+      clientId,
+      clientName,
+    });
+  }
+
+  /**
+   * Get current app settings.
+   */
+  async getSettings(): Promise<AppSettings> {
+    return invoke<AppSettings>("get_settings");
+  }
+
+  /**
+   * Update app settings.
+   */
+  async setSettings(settings: AppSettings): Promise<void> {
+    await invoke("set_settings", { settings });
+  }
+
+  /**
+   * Stop the daemon gracefully.
+   */
+  async shutdownDaemon(): Promise<void> {
+    await invoke("shutdown_daemon");
   }
 }
 
