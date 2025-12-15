@@ -2,15 +2,26 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "tasks": {
+    "validate:architecture": {
+      "dependsOn": [],
+      "cache": true,
+      "inputs": [
+        "src/**/*.tsx",
+        "src/**/*.ts",
+        "../../scripts/validate-ui-architecture.sh",
+        "../../scripts/validators/**"
+      ],
+      "outputs": []
+    },
     "build": {
-      "dependsOn": ["^build", "codegen"],
+      "dependsOn": ["^build", "codegen", "validate:architecture"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
       "inputs": ["src/**", "package.json", "tsconfig.json"]
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["codegen"]
+      "dependsOn": ["codegen", "validate:architecture"]
     },
     "lint": {
       "dependsOn": ["^lint"],

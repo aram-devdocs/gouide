@@ -64,6 +64,15 @@ export const Box = forwardRef<BoxElement, BoxProps>(function Box(
     bottom,
     left,
     zIndex,
+    // Interactivity
+    onClick,
+    onMouseEnter,
+    onMouseLeave,
+    onKeyDown,
+    // Accessibility
+    role,
+    tabIndex,
+    ariaLabel,
   },
   ref,
 ) {
@@ -127,6 +136,13 @@ export const Box = forwardRef<BoxElement, BoxProps>(function Box(
       className={className}
       style={Object.keys(cleanStyle).length > 0 ? cleanStyle : undefined}
       data-testid={testId}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onKeyDown={onKeyDown}
+      role={role}
+      tabIndex={tabIndex}
+      aria-label={ariaLabel}
     >
       {children}
     </Component>

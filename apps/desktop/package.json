@@ -11,7 +11,8 @@
     "lint": "biome check src",
     "lint:fix": "biome check --write src",
     "clean": "rm -rf dist .turbo",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "validate:architecture": "bash ../../scripts/validate-ui-architecture.sh"
   },
   "dependencies": {
     "@gouide/core-client": "workspace:*",

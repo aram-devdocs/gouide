@@ -70,4 +70,9 @@ cargo build --release || exit 1
 cd ../../..
 
 echo ""
+
+echo "🏗️  UI Architecture validation..."
+./scripts/validate-ui-architecture.sh || exit 1
+
+echo ""
 echo "✅ All pre-push checks passed! Pushing to remote..."

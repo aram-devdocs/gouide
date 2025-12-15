@@ -1,6 +1,6 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
-import { createContext, type ReactNode, useCallback, useContext, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
 
 // File tree node structure
 export interface FileTreeNode {
@@ -227,15 +227,18 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
     });
   }, []);
 
-  const value: WorkspaceContext = {
-    ...state,
-    openWorkspace,
-    openFile,
-    closeFile,
-    saveFile,
-    setActiveFile,
-    updateBufferContent,
-  };
+  const value = useMemo<WorkspaceContext>(
+    () => ({
+      ...state,
+      openWorkspace,
+      openFile,
+      closeFile,
+      saveFile,
+      setActiveFile,
+      updateBufferContent,
+    }),
+    [state, openWorkspace, openFile, closeFile, saveFile, setActiveFile, updateBufferContent],
+  );
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 }

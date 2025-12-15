@@ -140,6 +140,54 @@
       }
     },
     {
+      "includes": ["**/apps/**/*.ts", "**/apps/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@gouide/primitives": "Apps cannot import primitives. Use @gouide/frontend-ui templates.",
+                  "@gouide/primitives-desktop": "Apps cannot import primitives. Use @gouide/frontend-ui templates.",
+                  "@gouide/primitives-web": "Apps cannot import primitives. Use @gouide/frontend-ui templates.",
+                  "@gouide/frontend-ui/atoms": "Apps can ONLY import templates from @gouide/frontend-ui. No direct atom imports.",
+                  "@gouide/frontend-ui/molecules": "Apps can ONLY import templates from @gouide/frontend-ui. No direct molecule imports.",
+                  "@gouide/frontend-ui/organisms": "Apps can ONLY import templates from @gouide/frontend-ui. No direct organism imports.",
+                  "@gouide/frontend-ui/src/atoms": "Apps can ONLY import templates from @gouide/frontend-ui. No path imports allowed.",
+                  "@gouide/frontend-ui/src/molecules": "Apps can ONLY import templates from @gouide/frontend-ui. No path imports allowed.",
+                  "@gouide/frontend-ui/src/organisms": "Apps can ONLY import templates from @gouide/frontend-ui. No path imports allowed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "**/packages/frontend/shared/ui/src/molecules/**/*.tsx",
+        "**/packages/frontend/shared/ui/src/organisms/**/*.tsx",
+        "**/packages/frontend/shared/ui/src/templates/**/*.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@gouide/primitives": "Only atoms can import primitives. Import from ../atoms/ instead.",
+                  "@gouide/primitives-desktop": "Only atoms can import primitives. Import from ../atoms/ instead.",
+                  "@gouide/primitives-web": "Only atoms can import primitives. Import from ../atoms/ instead."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/*.gen.*", "**/generated/**", "**/src/generated/**"],
       "linter": {
         "enabled": false

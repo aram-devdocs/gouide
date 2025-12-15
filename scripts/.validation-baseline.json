@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "updated": "2025-12-14T00:00:00Z",
+  "checks": {
+    "direct-dom": {
+      "count": 0,
+      "files": []
+    },
+    "business-logic": {
+      "count": 0,
+      "files": []
+    },
+    "component-state": {
+      "count": 0,
+      "files": []
+    },
+    "atomic-violations": {
+      "count": 0,
+      "files": []
+    }
+  }
+}

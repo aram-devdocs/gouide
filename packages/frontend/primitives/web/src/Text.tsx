@@ -2,13 +2,16 @@ import { type CSSProperties, forwardRef } from "react";
 import type { TextProps } from "./types";
 import { resolveColor } from "./utils/tokens";
 
-type TextElement = HTMLSpanElement;
-
 /**
  * Text - text rendering primitive
  * Handles typography tokens and text-specific features
+ *
+ * Note: Ref type is intentionally `any` because this is a polymorphic component
+ * that can render as different HTML elements (span, p, h1-h6, label, etc.)
+ * and TypeScript doesn't support union ref types well.
  */
-export const Text = forwardRef<TextElement, TextProps>(function Text(
+// biome-ignore lint/suspicious/noExplicitAny: Polymorphic ref requires any type
+export const Text = forwardRef<any, TextProps>(function Text(
   {
     children,
     as: Component = "span",
@@ -57,7 +60,7 @@ export const Text = forwardRef<TextElement, TextProps>(function Text(
 
   return (
     <Component
-      ref={ref as React.Ref<HTMLSpanElement>}
+      ref={ref}
       className={className}
       style={Object.keys(cleanStyle).length > 0 ? cleanStyle : undefined}
       data-testid={testId}

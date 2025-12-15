@@ -89,6 +89,17 @@ export interface BoxProps extends PrimitiveBaseProps {
   bottom?: string | number;
   left?: string | number;
   zIndex?: number;
+
+  // Interactivity
+  onClick?: (e: React.MouseEvent) => void;
+  onMouseEnter?: (e: React.MouseEvent) => void;
+  onMouseLeave?: (e: React.MouseEvent) => void;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
+
+  // Accessibility
+  role?: string;
+  tabIndex?: number;
+  ariaLabel?: string;
 }
 
 /**

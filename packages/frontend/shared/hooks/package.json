@@ -18,8 +18,14 @@
     "clean": "rm -rf dist .turbo",
     "test": "echo 'No tests yet'"
   },
+  "dependencies": {
+    "@gouide/core-client": "workspace:*",
+    "@tauri-apps/plugin-dialog": "^2.0.1",
+    "@tauri-apps/plugin-fs": "^2.0.1"
+  },
   "devDependencies": {
     "@gouide/typescript-config": "workspace:*",
+    "@types/react": "^18.3.18",
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
@@ -27,7 +33,7 @@
   },
   "peerDependenciesMeta": {
     "react": {
-      "optional": true
+      "optional": false
     }
   }
 }

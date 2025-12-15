@@ -2,3 +2,10 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 pnpm lint-staged
+
+# Quick architecture check on staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "apps/.*\.(tsx|ts)$" || true)
+if [ -n "$STAGED_FILES" ]; then
+  echo "🏗️  UI architecture validation..."
+  bash ./scripts/validate-ui-architecture.sh || exit 1
+fi
