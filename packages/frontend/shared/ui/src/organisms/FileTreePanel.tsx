@@ -12,7 +12,10 @@ export interface FileTreeNode {
   name: string;
   path: string;
   isDirectory: boolean;
+  isSymlink?: boolean;
   children?: FileTreeNode[];
+  childrenLoaded?: boolean;
+  loadError?: string;
 }
 
 export interface FileTreePanelProps {
@@ -20,7 +23,7 @@ export interface FileTreePanelProps {
   selectedPath?: string;
   expandedPaths?: Set<string>;
   onFileSelect?: (path: string) => void;
-  onToggle?: (path: string) => void;
+  onToggle?: (path: string, node: FileTreeNode) => void;
 }
 
 /**
@@ -74,6 +77,7 @@ export function FileTreePanel({
     return nodes.map((node) => {
       const isExpanded = expandedPaths.has(node.path);
       const isSelected = selectedPath === node.path;
+      const isLoading = node.isDirectory && isExpanded && !node.childrenLoaded;
 
       return (
         <Box key={node.path}>
@@ -82,12 +86,42 @@ export function FileTreePanel({
             isDirectory={node.isDirectory}
             isExpanded={isExpanded}
             isSelected={isSelected}
+            isLoading={isLoading}
+            hasError={!!node.loadError}
             depth={depth}
-            onToggle={() => onToggle?.(node.path)}
+            onToggle={() => onToggle?.(node.path, node)}
             onSelect={() => onFileSelect?.(node.path)}
           />
-          {node.isDirectory && isExpanded && node.children && (
-            <Box>{renderFileTree(node.children, depth + 1)}</Box>
+          {node.isDirectory && isExpanded && (
+            <Box>
+              {node.childrenLoaded ? (
+                node.children && node.children.length > 0 ? (
+                  renderFileTree(node.children, depth + 1)
+                ) : (
+                  <Box
+                    paddingY="xs"
+                    style={{
+                      paddingLeft: `${(depth + 1) * 16}px`,
+                      color: "var(--fg-tertiary)",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {node.loadError || "Empty directory"}
+                  </Box>
+                )
+              ) : (
+                <Box
+                  paddingY="xs"
+                  style={{
+                    paddingLeft: `${(depth + 1) * 16}px`,
+                    color: "var(--fg-tertiary)",
+                    fontSize: "12px",
+                  }}
+                >
+                  Loading...
+                </Box>
+              )}
+            </Box>
           )}
         </Box>
       );

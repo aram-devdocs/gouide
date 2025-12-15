@@ -13,6 +13,8 @@ export interface FileTreeItemProps {
   isDirectory: boolean;
   isExpanded?: boolean;
   isSelected?: boolean;
+  isLoading?: boolean;
+  hasError?: boolean;
   depth?: number;
   onToggle?: () => void;
   onSelect?: () => void;
@@ -37,6 +39,8 @@ export function FileTreeItem({
   isDirectory,
   isExpanded = false,
   isSelected = false,
+  isLoading = false,
+  hasError = false,
   depth = 0,
   onToggle,
   onSelect,
@@ -44,6 +48,7 @@ export function FileTreeItem({
   const [isHovered, setIsHovered] = useState(false);
 
   const icon = isDirectory ? (isExpanded ? "📂" : "📁") : "📄";
+  const expandIcon = isLoading ? "⟳" : isExpanded ? "▼" : "▶";
 
   const handleClick = () => {
     onSelect?.();
@@ -101,13 +106,13 @@ export function FileTreeItem({
           role="button"
           tabIndex={0}
         >
-          <Icon size="sm" color="fg-secondary">
-            {isExpanded ? "▼" : "▶"}
+          <Icon size="sm" color={hasError ? "error" : "fg-secondary"}>
+            {expandIcon}
           </Icon>
         </Box>
       )}
       {!isDirectory && <Box width={16} />}
-      <Icon size="sm" color="fg-secondary">
+      <Icon size="sm" color={hasError ? "error" : "fg-secondary"}>
         {icon}
       </Icon>
       <Text size="sm" color={isSelected ? "fg-primary" : "fg-secondary"}>

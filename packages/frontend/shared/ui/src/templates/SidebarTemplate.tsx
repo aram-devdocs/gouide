@@ -7,7 +7,7 @@
  */
 
 import type { FileTreeNode } from "@gouide/frontend-hooks";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Box } from "../atoms/Box";
 import { Button } from "../atoms/Button";
 import { Text } from "../atoms/Text";
@@ -23,28 +23,8 @@ export interface SidebarTemplateProps {
   onOpenWorkspace: () => Promise<void>;
   /** Callback when user selects a file to open */
   onFileSelect: (path: string) => Promise<void>;
-}
-
-// Recursively collect all directory paths for auto-expansion
-function getAllDirectoryPaths(nodes: FileTreeNode[]): Set<string> {
-  const paths = new Set<string>();
-
-  function traverse(node: FileTreeNode) {
-    if (node.isDirectory) {
-      paths.add(node.path);
-      if (node.children) {
-        for (const child of node.children) {
-          traverse(child);
-        }
-      }
-    }
-  }
-
-  for (const node of nodes) {
-    traverse(node);
-  }
-
-  return paths;
+  /** Callback to lazy load directory children */
+  onLoadDirectory: (path: string) => Promise<void>;
 }
 
 // Extract workspace name from path
@@ -76,28 +56,31 @@ export function SidebarTemplate({
   files,
   onOpenWorkspace,
   onFileSelect,
+  onLoadDirectory,
 }: SidebarTemplateProps) {
-  // Manage file tree expansion state internally
-  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() =>
-    getAllDirectoryPaths(files),
+  // Manage file tree expansion state internally (start with everything collapsed)
+  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = useCallback(
+    (path: string, node: FileTreeNode) => {
+      setExpandedPaths((prev) => {
+        const next = new Set(prev);
+        if (next.has(path)) {
+          // Collapse
+          next.delete(path);
+        } else {
+          // Expand
+          next.add(path);
+          // Lazy load children if not loaded yet
+          if (node.isDirectory && !node.childrenLoaded) {
+            onLoadDirectory(path);
+          }
+        }
+        return next;
+      });
+    },
+    [onLoadDirectory],
   );
-
-  // Update expanded paths when files change
-  useEffect(() => {
-    setExpandedPaths(getAllDirectoryPaths(files));
-  }, [files]);
-
-  const toggleExpanded = useCallback((path: string) => {
-    setExpandedPaths((prev) => {
-      const next = new Set(prev);
-      if (next.has(path)) {
-        next.delete(path);
-      } else {
-        next.add(path);
-      }
-      return next;
-    });
-  }, []);
 
   const workspaceName = getWorkspaceName(workspacePath);
 

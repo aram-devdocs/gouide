@@ -29,6 +29,7 @@ export interface WorkspaceData {
   saveFile: (path: string, content: string) => Promise<void>;
   setActiveFile: (path: string) => void;
   updateBufferContent: (path: string, content: string) => void;
+  loadDirectoryChildren: (path: string) => Promise<void>;
 }
 
 /** Daemon connection data from useDaemonConnection hook */
@@ -113,6 +114,7 @@ export function AppShell({ workspace, daemon }: AppShellProps) {
               files={workspace.files}
               onOpenWorkspace={workspace.openWorkspace}
               onFileSelect={workspace.openFile}
+              onLoadDirectory={workspace.loadDirectoryChildren}
             />
           </Box>
           <Divider orientation="vertical" />

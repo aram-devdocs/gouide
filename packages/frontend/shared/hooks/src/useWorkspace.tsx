@@ -7,7 +7,10 @@ export interface FileTreeNode {
   name: string;
   path: string;
   isDirectory: boolean;
+  isSymlink?: boolean;
   children?: FileTreeNode[];
+  childrenLoaded?: boolean;
+  loadError?: string;
 }
 
 // Buffer structure for open files
@@ -34,6 +37,7 @@ interface WorkspaceContext extends WorkspaceState {
   saveFile: (path: string, content: string) => Promise<void>;
   setActiveFile: (path: string) => void;
   updateBufferContent: (path: string, content: string) => void;
+  loadDirectoryChildren: (path: string) => Promise<void>;
 }
 
 const WorkspaceContext = createContext<WorkspaceContext | undefined>(undefined);
@@ -51,8 +55,8 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
     isDirty: new Set(),
   });
 
-  // Build file tree from directory
-  const buildFileTree = useCallback(async (dirPath: string): Promise<FileTreeNode[]> => {
+  // Build file tree from directory (shallow - no recursion)
+  const buildFileTreeShallow = useCallback(async (dirPath: string): Promise<FileTreeNode[]> => {
     console.log(`Reading directory: ${dirPath}`);
     try {
       const entries = await readDir(dirPath);
@@ -60,6 +64,12 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
       const nodes: FileTreeNode[] = [];
 
       for (const entry of entries) {
+        // Skip symlinks to prevent infinite loops
+        if (entry.isSymlink) {
+          console.log(`  - Skipping symlink: ${entry.name}`);
+          continue;
+        }
+
         // Build proper path - ensure no double slashes
         const fullPath = dirPath.endsWith("/")
           ? `${dirPath}${entry.name}`
@@ -69,20 +79,15 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
           name: entry.name,
           path: fullPath,
           isDirectory: entry.isDirectory,
+          isSymlink: entry.isSymlink,
         };
 
-        console.log(`  - ${entry.name} (${entry.isDirectory ? "DIR" : "FILE"}) at ${fullPath}`);
-
-        // Recursively load children for directories
+        // For directories, mark as not loaded (will be lazy loaded)
         if (entry.isDirectory) {
-          try {
-            node.children = await buildFileTree(fullPath);
-          } catch (error) {
-            console.error(`Failed to read subdirectory ${fullPath}:`, error);
-            // Set children to empty array so the folder still appears
-            node.children = [];
-          }
+          node.childrenLoaded = false;
         }
+
+        console.log(`  - ${entry.name} (${entry.isDirectory ? "DIR" : "FILE"}) at ${fullPath}`);
 
         nodes.push(node);
       }
@@ -113,7 +118,7 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
       });
 
       if (selected && typeof selected === "string") {
-        const fileTree = await buildFileTree(selected);
+        const fileTree = await buildFileTreeShallow(selected);
         setState((prev) => ({
           ...prev,
           workspacePath: selected,
@@ -123,7 +128,78 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
     } catch (error) {
       console.error("Failed to open workspace:", error);
     }
-  }, [buildFileTree]);
+  }, [buildFileTreeShallow]);
+
+  // Load children for a specific directory (lazy loading)
+  const loadDirectoryChildren = useCallback(
+    async (dirPath: string) => {
+      try {
+        console.log(`Lazy loading children for: ${dirPath}`);
+        const children = await buildFileTreeShallow(dirPath);
+
+        setState((prev) => {
+          // Recursive function to find and update the node
+          const updateNodeInTree = (nodes: FileTreeNode[]): FileTreeNode[] => {
+            return nodes.map((node) => {
+              if (node.path === dirPath) {
+                // Found the target node - update it
+                console.log(`Found and updating node: ${dirPath}`);
+                return {
+                  ...node,
+                  children,
+                  childrenLoaded: true,
+                };
+              }
+              // Recursively search in children
+              if (node.children) {
+                return {
+                  ...node,
+                  children: updateNodeInTree(node.children),
+                };
+              }
+              return node;
+            });
+          };
+
+          return {
+            ...prev,
+            files: updateNodeInTree(prev.files),
+          };
+        });
+      } catch (error) {
+        console.error(`Failed to load children for ${dirPath}:`, error);
+
+        // Update node with error
+        setState((prev) => {
+          const updateNodeInTree = (nodes: FileTreeNode[]): FileTreeNode[] => {
+            return nodes.map((node) => {
+              if (node.path === dirPath) {
+                return {
+                  ...node,
+                  children: [],
+                  childrenLoaded: true,
+                  loadError: error instanceof Error ? error.message : "Unknown error",
+                };
+              }
+              if (node.children) {
+                return {
+                  ...node,
+                  children: updateNodeInTree(node.children),
+                };
+              }
+              return node;
+            });
+          };
+
+          return {
+            ...prev,
+            files: updateNodeInTree(prev.files),
+          };
+        });
+      }
+    },
+    [buildFileTreeShallow],
+  );
 
   // Open file into buffer
   const openFile = useCallback(async (path: string) => {
@@ -236,8 +312,18 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
       saveFile,
       setActiveFile,
       updateBufferContent,
+      loadDirectoryChildren,
     }),
-    [state, openWorkspace, openFile, closeFile, saveFile, setActiveFile, updateBufferContent],
+    [
+      state,
+      openWorkspace,
+      openFile,
+      closeFile,
+      saveFile,
+      setActiveFile,
+      updateBufferContent,
+      loadDirectoryChildren,
+    ],
   );
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
