@@ -12,6 +12,7 @@
   padding: 0 var(--spacing-lg);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -23,10 +24,43 @@
   text-transform: uppercase;
 }
 
+.workspaceName {
+  font-size: var(--font-size-sm);
+  color: var(--fg-primary);
+  margin-left: var(--spacing-md);
+  font-weight: normal;
+}
+
+.actions {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.openButton {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.openButton:hover {
+  background-color: #006bb3;
+}
+
+.openButton:active {
+  background-color: #005a9e;
+}
+
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-md);
+  padding: 0;
 }
 
 .placeholder {

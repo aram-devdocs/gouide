@@ -7,6 +7,8 @@
 )]
 // Binary doesn't directly use all lib dependencies
 #![allow(unused_crate_dependencies)]
+// Tauri's generated context has large stack frames
+#![allow(clippy::large_stack_frames)]
 
 #[allow(unreachable_pub)]
 mod bridge;
@@ -33,6 +35,8 @@ fn main() {
     info!("Starting Gouide Desktop");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {

@@ -1,0 +1,77 @@
+.fileTree {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: var(--font-size-sm);
+  color: var(--fg-primary);
+  user-select: none;
+}
+
+.treeItem {
+  width: 100%;
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 var(--spacing-xs);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.1s ease;
+}
+
+.itemRow:hover {
+  background-color: var(--bg-hover);
+}
+
+.itemRow:focus {
+  outline: none;
+  background-color: var(--bg-hover);
+}
+
+.itemRow.selected {
+  background-color: var(--bg-active);
+  color: var(--fg-primary);
+}
+
+.chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 2px;
+  font-size: 8px;
+  color: var(--fg-secondary);
+  flex-shrink: 0;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: var(--spacing-xs);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.children {
+  /* No additional styling needed - padding is handled by level */
+}
+
+.empty {
+  padding: var(--spacing-md);
+  color: var(--fg-muted);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+}
