@@ -22,7 +22,7 @@ tauri-plugin-store = "2"
 gouide-protocol = { path = "../../../core/crates/gouide-protocol" }
 
 # gRPC client
-tonic = { version = "0.12", default-features = false, features = ["transport", "codegen", "prost"] }
+tonic = { version = "0.14", default-features = false, features = ["transport", "codegen", "prost"] }
 hyper-util = { version = "0.1", features = ["tokio", "client", "client-legacy"] }
 tower = { version = "0.5", features = ["util"] }
 http = "1.1"
