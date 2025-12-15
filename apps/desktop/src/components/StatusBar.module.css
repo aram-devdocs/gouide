@@ -9,7 +9,8 @@
   color: white;
 }
 
-.left, .right {
+.left,
+.right {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);

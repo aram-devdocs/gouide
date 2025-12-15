@@ -16,3 +16,6 @@ tonic-build = { workspace = true }
 #   - Debian/Ubuntu: apt install protobuf-compiler
 #   - macOS: brew install protobuf
 #   - Or download from: https://github.com/protocolbuffers/protobuf/releases
+
+[lints]
+workspace = true

@@ -1,6 +1,6 @@
-import { forwardRef, type CSSProperties, type ElementType, type ComponentPropsWithRef } from 'react';
-import type { BoxProps } from './types';
-import { resolveSpacing, resolveColor, resolveRadius } from './utils/tokens';
+import { type CSSProperties, forwardRef } from "react";
+import type { BoxProps } from "./types";
+import { resolveColor, resolveRadius, resolveSpacing } from "./utils/tokens";
 
 type BoxElement = HTMLDivElement;
 
@@ -11,7 +11,7 @@ type BoxElement = HTMLDivElement;
 export const Box = forwardRef<BoxElement, BoxProps>(function Box(
   {
     children,
-    as: Component = 'div',
+    as: Component = "div",
     className,
     style,
     testId,
@@ -65,7 +65,7 @@ export const Box = forwardRef<BoxElement, BoxProps>(function Box(
     left,
     zIndex,
   },
-  ref
+  ref,
 ) {
   const computedStyle: CSSProperties = {
     display,
@@ -99,7 +99,7 @@ export const Box = forwardRef<BoxElement, BoxProps>(function Box(
     backgroundColor: resolveColor(backgroundColor),
     borderColor: resolveColor(borderColor),
     borderWidth: borderWidth !== undefined ? `${borderWidth}px` : undefined,
-    borderStyle: borderWidth !== undefined ? 'solid' : undefined,
+    borderStyle: borderWidth !== undefined ? "solid" : undefined,
     borderRadius: resolveRadius(borderRadius),
     // Overflow
     overflow,
@@ -118,7 +118,7 @@ export const Box = forwardRef<BoxElement, BoxProps>(function Box(
 
   // Filter out undefined values for cleaner DOM
   const cleanStyle = Object.fromEntries(
-    Object.entries(computedStyle).filter(([, v]) => v !== undefined)
+    Object.entries(computedStyle).filter(([, v]) => v !== undefined),
   ) as CSSProperties;
 
   return (

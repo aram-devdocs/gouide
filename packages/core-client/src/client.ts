@@ -3,12 +3,7 @@
  */
 
 import type { CoreTransport } from "./transport.js";
-import type {
-  DaemonInfo,
-  WelcomeInfo,
-  PingResult,
-  ConnectionState,
-} from "./types.js";
+import type { ConnectionState, DaemonInfo, PingResult, WelcomeInfo } from "./types.js";
 
 /**
  * Options for creating a GouideClient.
@@ -159,10 +154,7 @@ export class GouideClient {
     this.setState({ status: "connecting" });
 
     try {
-      const welcome = await this.transport.connect(
-        this.clientId,
-        this.clientName
-      );
+      const welcome = await this.transport.connect(this.clientId, this.clientName);
       this.setState({ status: "connected", welcome });
       return welcome;
     } catch (e) {
@@ -190,22 +182,15 @@ export class GouideClient {
 
     try {
       // Check if transport supports ensureAndConnect
-      if ("ensureAndConnect" in this.transport) {
-        const welcome = await (this.transport as any).ensureAndConnect(
-          this.clientId,
-          this.clientName
-        );
-        this.setState({ status: "connected", welcome });
-        return welcome;
-      } else {
-        // Fallback to regular connect
-        const welcome = await this.transport.connect(
-          this.clientId,
-          this.clientName
-        );
+      if (this.transport.ensureAndConnect) {
+        const welcome = await this.transport.ensureAndConnect(this.clientId, this.clientName);
         this.setState({ status: "connected", welcome });
         return welcome;
       }
+      // Fallback to regular connect
+      const welcome = await this.transport.connect(this.clientId, this.clientName);
+      this.setState({ status: "connected", welcome });
+      return welcome;
     } catch (e) {
       const error = e instanceof Error ? e.message : String(e);
       this.setState({ status: "error", error });

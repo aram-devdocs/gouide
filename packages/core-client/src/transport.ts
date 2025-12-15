@@ -5,7 +5,7 @@
  * (Tauri, WebSocket, etc.) to be used with the same client API.
  */
 
-import type { DaemonInfo, WelcomeInfo, PingResult } from "./types.js";
+import type { DaemonInfo, PingResult, WelcomeInfo } from "./types.js";
 
 /**
  * Transport interface for communicating with the daemon.
@@ -45,4 +45,14 @@ export interface CoreTransport {
    * Check if currently connected to daemon.
    */
   isConnected(): Promise<boolean>;
+
+  /**
+   * Optional: Ensure daemon is running and connect in one step.
+   * This is typically implemented by desktop transports that can spawn the daemon.
+   * @param clientId - Unique identifier for this client
+   * @param clientName - Human-readable name for this client
+   * @returns Welcome info on success
+   * @throws Error if daemon spawn or connection fails
+   */
+  ensureAndConnect?(clientId: string, clientName: string): Promise<WelcomeInfo>;
 }

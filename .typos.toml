@@ -1,0 +1,21 @@
+[default]
+extend-ignore-re = [
+  # Ignore hex strings
+  "[0-9a-fA-F]{8,}",
+  # Ignore URLs
+  "https?://[^\\s]+",
+]
+
+[files]
+extend-exclude = [
+  "pnpm-lock.yaml",
+  "Cargo.lock",
+  "*.gen.*",
+  "generated/",
+  "dist/",
+  "target/",
+  "node_modules/",
+]
+
+[default.extend-words]
+# Add custom allowed words here if needed

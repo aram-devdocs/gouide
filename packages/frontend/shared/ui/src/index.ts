@@ -3,4 +3,4 @@
  * Shared atomic UI components
  */
 
-export * from './atoms';
+export * from "./atoms";

@@ -3,7 +3,7 @@
  * Convert token names to CSS variable references
  */
 
-import type { SpacingToken, ColorToken, RadiusToken } from '@gouide/frontend-theme';
+import type { ColorToken, RadiusToken, SpacingToken } from "@gouide/frontend-theme";
 
 /**
  * Resolve a spacing token to a CSS variable reference
@@ -20,10 +20,10 @@ export function resolveColor(token: ColorToken | undefined): string | undefined 
   if (!token) return undefined;
 
   // Handle bg-* and fg-* tokens
-  if (token.startsWith('bg-')) {
+  if (token.startsWith("bg-")) {
     return `var(--${token})`;
   }
-  if (token.startsWith('fg-')) {
+  if (token.startsWith("fg-")) {
     return `var(--${token})`;
   }
 

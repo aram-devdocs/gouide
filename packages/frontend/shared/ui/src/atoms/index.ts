@@ -3,5 +3,5 @@
  * Only atoms may import from @gouide/primitives
  */
 
-export { Button } from './Button';
-export type { ButtonProps } from './Button';
+export type { ButtonProps } from "./Button";
+export { Button } from "./Button";

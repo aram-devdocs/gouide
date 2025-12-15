@@ -1,14 +1,14 @@
+import { type ConnectionState, type DaemonInfo, GouideClient } from "@gouide/core-client";
+import { TauriTransport } from "@gouide/core-client/tauri";
 import {
   createContext,
+  type ReactNode,
+  useCallback,
   useContext,
   useEffect,
-  useState,
-  useCallback,
   useRef,
-  type ReactNode,
+  useState,
 } from "react";
-import { GouideClient, type ConnectionState, type DaemonInfo } from "@gouide/core-client";
-import { TauriTransport } from "@gouide/core-client/tauri";
 
 interface DaemonContextValue {
   /** Current connection state */
@@ -84,7 +84,7 @@ export function DaemonProvider({ children }: { children: ReactNode }) {
         if (mounted) {
           setDaemonInfo(info);
         }
-      } catch (e) {
+      } catch (_e) {
         // Error is already handled by client state management
         if (!mounted) return;
       } finally {
@@ -114,7 +114,7 @@ export function DaemonProvider({ children }: { children: ReactNode }) {
       // Discover daemon info for display
       const info = await transport.discover();
       setDaemonInfo(info);
-    } catch (e) {
+    } catch (_e) {
       // Error is already handled by client state management
     } finally {
       connectingRef.current = false;
@@ -138,9 +138,7 @@ export function DaemonProvider({ children }: { children: ReactNode }) {
   }, [discoverAndConnect]);
 
   return (
-    <DaemonContext.Provider
-      value={{ state, daemonInfo, connect, disconnect, retry }}
-    >
+    <DaemonContext.Provider value={{ state, daemonInfo, connect, disconnect, retry }}>
       {children}
     </DaemonContext.Provider>
   );

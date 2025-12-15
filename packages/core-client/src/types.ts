@@ -7,16 +7,16 @@
 
 // Re-export protocol types that clients need
 export type {
-  Hello,
-  Welcome,
-  EstablishResponse,
+  Capabilities,
   DisconnectRequest,
   DisconnectResponse,
+  EstablishResponse,
+  Hello,
   PingRequest,
   PingResponse,
-  Capabilities,
-  WorkspaceLimits,
   Timestamp,
+  Welcome,
+  WorkspaceLimits,
 } from "@gouide/protocol";
 
 /**

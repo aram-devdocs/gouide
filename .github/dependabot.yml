@@ -1,0 +1,63 @@
+version: 2
+updates:
+  # TypeScript/JavaScript dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      typescript:
+        patterns:
+          - "typescript*"
+          - "@types/*"
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react*"
+      build-tools:
+        patterns:
+          - "vite*"
+          - "turbo"
+          - "@biomejs/biome"
+
+  # Rust dependencies - core workspace
+  - package-ecosystem: "cargo"
+    directory: "/core"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      tokio:
+        patterns:
+          - "tokio*"
+      tonic:
+        patterns:
+          - "tonic*"
+          - "prost*"
+      serde:
+        patterns:
+          - "serde*"
+
+  # Rust dependencies - Tauri desktop
+  - package-ecosystem: "cargo"
+    directory: "/apps/desktop/src-tauri"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      tauri:
+        patterns:
+          - "tauri*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5

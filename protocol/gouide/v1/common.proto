@@ -46,10 +46,15 @@ message Timestamp {
 
 // Severity level for errors and diagnostics.
 enum Severity {
+  // Default unspecified severity.
   SEVERITY_UNSPECIFIED = 0;
+  // Informational message.
   SEVERITY_INFO = 1;
+  // Warning that doesn't prevent operation.
   SEVERITY_WARNING = 2;
+  // Error that prevents operation.
   SEVERITY_ERROR = 3;
+  // Fatal error requiring restart.
   SEVERITY_FATAL = 4;
 }
 
@@ -114,6 +119,7 @@ message PaginationResponse {
 
 // Type of delta update for streaming responses.
 enum DeltaType {
+  // Default unspecified delta type.
   DELTA_TYPE_UNSPECIFIED = 0;
   // Full snapshot replacing all previous state.
   DELTA_TYPE_SNAPSHOT = 1;

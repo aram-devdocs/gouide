@@ -6,22 +6,22 @@
 // Color tokens (matching existing CSS variables)
 export const colors = {
   bg: {
-    primary: '#1e1e1e',
-    secondary: '#252526',
-    tertiary: '#2d2d2d',
-    hover: '#3c3c3c',
-    active: '#094771',
+    primary: "#1e1e1e",
+    secondary: "#252526",
+    tertiary: "#2d2d2d",
+    hover: "#3c3c3c",
+    active: "#094771",
   },
   fg: {
-    primary: '#cccccc',
-    secondary: '#969696',
-    muted: '#6e6e6e',
+    primary: "#cccccc",
+    secondary: "#969696",
+    muted: "#6e6e6e",
   },
-  border: '#3c3c3c',
-  accent: '#007acc',
-  error: '#f14c4c',
-  success: '#4ec9b0',
-  warning: '#cca700',
+  border: "#3c3c3c",
+  accent: "#007acc",
+  error: "#f14c4c",
+  success: "#4ec9b0",
+  warning: "#cca700",
 } as const;
 
 // Spacing scale (in pixels)
@@ -93,5 +93,5 @@ export type RadiusToken = keyof typeof radii;
 // Color tokens - flattened for easy use in props
 export type BgColorToken = `bg-${keyof typeof colors.bg}`;
 export type FgColorToken = `fg-${keyof typeof colors.fg}`;
-export type SemanticColorToken = 'border' | 'accent' | 'error' | 'success' | 'warning';
+export type SemanticColorToken = "border" | "accent" | "error" | "success" | "warning";
 export type ColorToken = BgColorToken | FgColorToken | SemanticColorToken;

@@ -7,17 +7,9 @@ export function StatusBar() {
   const renderStatus = () => {
     switch (state.status) {
       case "disconnected":
-        return (
-          <span className={styles.disconnected}>
-            Disconnected
-          </span>
-        );
+        return <span className={styles.disconnected}>Disconnected</span>;
       case "connecting":
-        return (
-          <span className={styles.connecting}>
-            Connecting...
-          </span>
-        );
+        return <span className={styles.connecting}>Connecting...</span>;
       case "connected":
         return (
           <span className={styles.connected}>
@@ -28,7 +20,7 @@ export function StatusBar() {
         return (
           <span className={styles.error} title={state.error}>
             Error: {state.error}
-            <button className={styles.retryButton} onClick={retry}>
+            <button type="button" className={styles.retryButton} onClick={retry}>
               Retry
             </button>
           </span>
@@ -38,14 +30,10 @@ export function StatusBar() {
 
   return (
     <footer className={styles.statusBar}>
-      <div className={styles.left}>
-        {renderStatus()}
-      </div>
+      <div className={styles.left}>{renderStatus()}</div>
       <div className={styles.right}>
         {state.status === "connected" && daemonInfo && (
-          <span className={styles.info}>
-            daemon: {daemonInfo.daemon_id.slice(0, 8)}
-          </span>
+          <span className={styles.info}>daemon: {daemonInfo.daemon_id.slice(0, 8)}</span>
         )}
       </div>
     </footer>

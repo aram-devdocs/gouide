@@ -1,0 +1,58 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-push validation..."
+echo ""
+
+# TypeScript/JavaScript checks
+echo "📦 JavaScript/TypeScript validation..."
+echo "  → Running Biome lint and format check..."
+pnpm lint || exit 1
+
+echo "  → Running TypeScript type check..."
+pnpm typecheck || exit 1
+
+echo "  → Running tests..."
+pnpm test || exit 1
+
+echo ""
+
+# Protocol validation
+echo "📋 Protocol validation..."
+echo "  → Running buf lint..."
+pnpm --filter @gouide/protocol codegen:lint || exit 1
+
+# Check if protocol files changed (against origin/main)
+# Only enforce breaking changes for v1.0.0+
+CHANGED_PROTOS=$(git diff origin/main...HEAD --name-only | grep "^protocol/.*\.proto$" || true)
+PROTOCOL_VERSION=$(grep -o '"version": "[^"]*"' packages/protocol/package.json | head -1 | cut -d'"' -f4)
+if [ -n "$CHANGED_PROTOS" ]; then
+  echo "  → Protocol files changed (version $PROTOCOL_VERSION)"
+  if [[ "$PROTOCOL_VERSION" =~ ^0\. ]]; then
+    echo "  ℹ  Skipping buf breaking check (pre-1.0 allows breaking changes)"
+  else
+    echo "  → Running buf breaking check..."
+    pnpm --filter @gouide/protocol codegen:breaking || exit 1
+  fi
+fi
+
+echo ""
+
+# Rust checks
+echo "🦀 Rust validation..."
+echo "  → Running cargo fmt check..."
+cd core && cargo fmt --all -- --check || exit 1
+
+echo "  → Running cargo clippy..."
+cargo clippy --all-targets --all-features -- -D warnings || exit 1
+
+echo "  → Running cargo test..."
+cargo test --all-features || exit 1
+
+echo "  → Running cargo build..."
+cargo build --release || exit 1
+
+cd ..
+
+echo ""
+echo "✅ All pre-push checks passed! Pushing to remote..."

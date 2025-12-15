@@ -22,7 +22,7 @@ import "gouide/v1/common.proto";
 // ============================================================================
 
 // Editor service for text editing and enrichment.
-service Editor {
+service EditorService {
   // Apply text edits to a buffer.
   rpc ApplyEdits(ApplyEditsRequest) returns (ApplyEditsResponse);
 
@@ -30,16 +30,16 @@ service Editor {
   rpc GetSyntaxTokens(GetSyntaxTokensRequest) returns (GetSyntaxTokensResponse);
 
   // Subscribe to syntax token changes (for visible range).
-  rpc WatchSyntaxTokens(WatchSyntaxTokensRequest) returns (stream SyntaxTokensEvent);
+  rpc WatchSyntaxTokens(WatchSyntaxTokensRequest) returns (stream WatchSyntaxTokensResponse);
 
   // Get diagnostics for a file.
   rpc GetDiagnostics(GetDiagnosticsRequest) returns (GetDiagnosticsResponse);
 
   // Subscribe to diagnostic changes.
-  rpc WatchDiagnostics(WatchDiagnosticsRequest) returns (stream DiagnosticsEvent);
+  rpc WatchDiagnostics(WatchDiagnosticsRequest) returns (stream WatchDiagnosticsResponse);
 
   // Subscribe to external buffer changes.
-  rpc WatchBufferChanges(WatchBufferChangesRequest) returns (stream BufferChangeEvent);
+  rpc WatchBufferChanges(WatchBufferChangesRequest) returns (stream WatchBufferChangesResponse);
 
   // Request formatting for buffer.
   rpc FormatBuffer(FormatBufferRequest) returns (FormatBufferResponse);
@@ -85,7 +85,9 @@ message ApplyEditsRequest {
 message ApplyEditsResponse {
   // Result of the operation.
   oneof result {
+    // Operation succeeded.
     ApplyEditsSuccess success = 1;
+    // Error if operation failed.
     Error error = 2;
   }
 }
@@ -108,43 +110,77 @@ message ApplyEditsSuccess {
 
 // Token types for syntax highlighting (simplified TextMate-compatible).
 enum TokenType {
+  // Default unspecified token type.
   TOKEN_TYPE_UNSPECIFIED = 0;
+  // Code comment.
   TOKEN_TYPE_COMMENT = 1;
+  // String literal.
   TOKEN_TYPE_STRING = 2;
+  // Language keyword.
   TOKEN_TYPE_KEYWORD = 3;
+  // Numeric literal.
   TOKEN_TYPE_NUMBER = 4;
+  // Regular expression.
   TOKEN_TYPE_REGEXP = 5;
+  // Operator symbol.
   TOKEN_TYPE_OPERATOR = 6;
+  // Namespace identifier.
   TOKEN_TYPE_NAMESPACE = 7;
+  // Type name.
   TOKEN_TYPE_TYPE = 8;
+  // Struct type.
   TOKEN_TYPE_STRUCT = 9;
+  // Class type.
   TOKEN_TYPE_CLASS = 10;
+  // Interface type.
   TOKEN_TYPE_INTERFACE = 11;
+  // Enum type.
   TOKEN_TYPE_ENUM = 12;
+  // Enum member value.
   TOKEN_TYPE_ENUM_MEMBER = 13;
+  // Generic type parameter.
   TOKEN_TYPE_TYPE_PARAMETER = 14;
+  // Function identifier.
   TOKEN_TYPE_FUNCTION = 15;
+  // Method identifier.
   TOKEN_TYPE_METHOD = 16;
+  // Preprocessor macro.
   TOKEN_TYPE_MACRO = 17;
+  // Variable identifier.
   TOKEN_TYPE_VARIABLE = 18;
+  // Function/method parameter.
   TOKEN_TYPE_PARAMETER = 19;
+  // Object/struct property.
   TOKEN_TYPE_PROPERTY = 20;
+  // Code label.
   TOKEN_TYPE_LABEL = 21;
+  // Punctuation character.
   TOKEN_TYPE_PUNCTUATION = 22;
 }
 
 // Token modifiers (can be combined as bitmask).
 enum TokenModifier {
+  // Default unspecified modifier.
   TOKEN_MODIFIER_UNSPECIFIED = 0;
+  // Symbol declaration.
   TOKEN_MODIFIER_DECLARATION = 1;
+  // Symbol definition.
   TOKEN_MODIFIER_DEFINITION = 2;
+  // Read-only symbol.
   TOKEN_MODIFIER_READONLY = 4;
+  // Static member.
   TOKEN_MODIFIER_STATIC = 8;
+  // Deprecated symbol.
   TOKEN_MODIFIER_DEPRECATED = 16;
+  // Abstract member.
   TOKEN_MODIFIER_ABSTRACT = 32;
+  // Async function.
   TOKEN_MODIFIER_ASYNC = 64;
+  // Symbol being modified.
   TOKEN_MODIFIER_MODIFICATION = 128;
+  // Documentation comment.
   TOKEN_MODIFIER_DOCUMENTATION = 256;
+  // Standard library symbol.
   TOKEN_MODIFIER_DEFAULT_LIBRARY = 512;
 }
 
@@ -175,7 +211,9 @@ message GetSyntaxTokensRequest {
 message GetSyntaxTokensResponse {
   // Result of the operation.
   oneof result {
+    // Operation succeeded.
     GetSyntaxTokensSuccess success = 1;
+    // Error if operation failed.
     Error error = 2;
   }
 }
@@ -202,7 +240,7 @@ message WatchSyntaxTokensRequest {
 }
 
 // Streaming syntax token updates.
-message SyntaxTokensEvent {
+message WatchSyntaxTokensResponse {
   // Stream metadata.
   StreamMeta meta = 1;
 
@@ -222,15 +260,21 @@ message SyntaxTokensEvent {
 
 // Diagnostic severity (LSP-compatible).
 enum DiagnosticSeverity {
+  // Default unspecified severity.
   DIAGNOSTIC_SEVERITY_UNSPECIFIED = 0;
+  // Error severity.
   DIAGNOSTIC_SEVERITY_ERROR = 1;
+  // Warning severity.
   DIAGNOSTIC_SEVERITY_WARNING = 2;
+  // Informational severity.
   DIAGNOSTIC_SEVERITY_INFO = 3;
+  // Hint severity.
   DIAGNOSTIC_SEVERITY_HINT = 4;
 }
 
 // Diagnostic tag (LSP-compatible).
 enum DiagnosticTag {
+  // Default unspecified tag.
   DIAGNOSTIC_TAG_UNSPECIFIED = 0;
   // Unused code.
   DIAGNOSTIC_TAG_UNNECESSARY = 1;
@@ -285,7 +329,9 @@ message GetDiagnosticsRequest {
 message GetDiagnosticsResponse {
   // Result of the operation.
   oneof result {
+    // Operation succeeded.
     GetDiagnosticsSuccess success = 1;
+    // Error if operation failed.
     Error error = 2;
   }
 }
@@ -302,13 +348,15 @@ message GetDiagnosticsSuccess {
 message WatchDiagnosticsRequest {
   // Watch specific buffer, or all buffers in workspace.
   oneof scope {
+    // Watch diagnostics for a specific buffer.
     BufferId buffer_id = 1;
+    // Watch diagnostics for all buffers in workspace.
     WorkspaceId workspace_id = 2;
   }
 }
 
 // Streaming diagnostic updates.
-message DiagnosticsEvent {
+message WatchDiagnosticsResponse {
   // Stream metadata.
   StreamMeta meta = 1;
 
@@ -329,6 +377,7 @@ message DiagnosticsEvent {
 
 // Buffer change types for external modifications.
 enum BufferChangeType {
+  // Default unspecified change type.
   BUFFER_CHANGE_TYPE_UNSPECIFIED = 0;
   // File was modified externally.
   BUFFER_CHANGE_TYPE_MODIFIED = 1;
@@ -347,7 +396,7 @@ message WatchBufferChangesRequest {
 }
 
 // External buffer change event.
-message BufferChangeEvent {
+message WatchBufferChangesResponse {
   // Stream metadata.
   StreamMeta meta = 1;
 
@@ -412,7 +461,9 @@ message FormatSelectionRequest {
 message FormatBufferResponse {
   // Result of the operation.
   oneof result {
+    // Operation succeeded.
     FormatSuccess success = 1;
+    // Error if operation failed.
     Error error = 2;
   }
 }
@@ -421,7 +472,9 @@ message FormatBufferResponse {
 message FormatSelectionResponse {
   // Result of the operation.
   oneof result {
+    // Operation succeeded.
     FormatSuccess success = 1;
+    // Error if operation failed.
     Error error = 2;
   }
 }

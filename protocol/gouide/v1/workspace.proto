@@ -23,7 +23,7 @@ import "gouide/v1/common.proto";
 // ============================================================================
 
 // Workspace service for folder and file management.
-service Workspace {
+service WorkspaceService {
   // Open a workspace folder. Returns workspace ID for subsequent operations.
   rpc OpenWorkspace(OpenWorkspaceRequest) returns (OpenWorkspaceResponse);
 
@@ -38,10 +38,10 @@ service Workspace {
 
   // Subscribe to file tree changes (streaming).
   // First message is full snapshot; subsequent are deltas.
-  rpc WatchFileTree(WatchFileTreeRequest) returns (stream FileTreeEvent);
+  rpc WatchFileTree(WatchFileTreeRequest) returns (stream WatchFileTreeResponse);
 
   // Subscribe to workspace status changes (streaming).
-  rpc WatchWorkspaceStatus(WatchWorkspaceStatusRequest) returns (stream WorkspaceStatusEvent);
+  rpc WatchWorkspaceStatus(WatchWorkspaceStatusRequest) returns (stream WatchWorkspaceStatusResponse);
 }
 
 // ============================================================================
@@ -67,7 +67,9 @@ message OpenWorkspaceRequest {
 message OpenWorkspaceResponse {
   // Result of the operation.
   oneof result {
+    // Workspace successfully opened.
     OpenWorkspaceSuccess success = 1;
+    // Error occurred while opening workspace.
     Error error = 2;
   }
 }
@@ -103,7 +105,9 @@ message CloseWorkspaceRequest {
 message CloseWorkspaceResponse {
   // Result of the operation.
   oneof result {
+    // Workspace successfully closed.
     CloseWorkspaceSuccess success = 1;
+    // Error occurred while closing workspace.
     Error error = 2;
   }
 }
@@ -120,12 +124,19 @@ message CloseWorkspaceSuccess {
 
 // Indexing states.
 enum IndexingState {
+  // Default unspecified state.
   INDEXING_STATE_UNSPECIFIED = 0;
+  // Indexing has not started yet.
   INDEXING_STATE_NOT_STARTED = 1;
+  // Scanning filesystem for files.
   INDEXING_STATE_SCANNING = 2;
+  // Actively indexing file contents.
   INDEXING_STATE_INDEXING = 3;
+  // Indexing completed successfully.
   INDEXING_STATE_COMPLETE = 4;
+  // Indexing temporarily paused.
   INDEXING_STATE_PAUSED = 5;
+  // Indexing encountered an error.
   INDEXING_STATE_ERROR = 6;
 }
 
@@ -160,7 +171,9 @@ message GetWorkspaceStatusRequest {
 message GetWorkspaceStatusResponse {
   // Result of the operation.
   oneof result {
+    // Current workspace status.
     WorkspaceStatus status = 1;
+    // Error occurred while getting status.
     Error error = 2;
   }
 }
@@ -172,7 +185,7 @@ message WatchWorkspaceStatusRequest {
 }
 
 // Streaming status updates.
-message WorkspaceStatusEvent {
+message WatchWorkspaceStatusResponse {
   // Stream metadata.
   StreamMeta meta = 1;
   // Current status.
@@ -185,22 +198,35 @@ message WorkspaceStatusEvent {
 
 // File type classification.
 enum FileType {
+  // Default unspecified file type.
   FILE_TYPE_UNSPECIFIED = 0;
+  // Regular file.
   FILE_TYPE_FILE = 1;
+  // Directory.
   FILE_TYPE_DIRECTORY = 2;
+  // Symbolic link.
   FILE_TYPE_SYMLINK = 3;
 }
 
 // Git status for a file.
 enum GitFileStatus {
+  // Default unspecified git status.
   GIT_FILE_STATUS_UNSPECIFIED = 0;
+  // File is not tracked by git.
   GIT_FILE_STATUS_UNTRACKED = 1;
+  // File has been modified.
   GIT_FILE_STATUS_MODIFIED = 2;
+  // File has been added to staging.
   GIT_FILE_STATUS_ADDED = 3;
+  // File has been deleted.
   GIT_FILE_STATUS_DELETED = 4;
+  // File has been renamed.
   GIT_FILE_STATUS_RENAMED = 5;
+  // File has been copied.
   GIT_FILE_STATUS_COPIED = 6;
+  // File is ignored by gitignore.
   GIT_FILE_STATUS_IGNORED = 7;
+  // File has merge conflicts.
   GIT_FILE_STATUS_CONFLICT = 8;
 }
 
@@ -267,7 +293,9 @@ message ListDirectoryRequest {
 message ListDirectoryResponse {
   // Result of the operation.
   oneof result {
+    // Directory successfully listed.
     ListDirectorySuccess success = 1;
+    // Error occurred while listing directory.
     Error error = 2;
   }
 }
@@ -307,7 +335,7 @@ message WatchFileTreeRequest {
 }
 
 // Streaming file tree event.
-message FileTreeEvent {
+message WatchFileTreeResponse {
   // Stream metadata for gap detection.
   StreamMeta meta = 1;
 
@@ -324,7 +352,7 @@ message FileTreeEvent {
 // ============================================================================
 
 // Buffer service for managing open file buffers.
-service Buffer {
+service BufferService {
   // Open a file into a buffer.
   rpc OpenBuffer(OpenBufferRequest) returns (OpenBufferResponse);
 
@@ -347,6 +375,7 @@ service Buffer {
 
 // Line ending styles.
 enum LineEnding {
+  // Default unspecified line ending.
   LINE_ENDING_UNSPECIFIED = 0;
   // Unix (LF).
   LINE_ENDING_LF = 1;
@@ -377,7 +406,9 @@ message OpenBufferRequest {
 message OpenBufferResponse {
   // Result of the operation.
   oneof result {
+    // Buffer successfully opened.
     OpenBufferSuccess success = 1;
+    // Error occurred while opening buffer.
     Error error = 2;
   }
 }
@@ -443,7 +474,9 @@ message CloseBufferRequest {
 message CloseBufferResponse {
   // Result of the operation.
   oneof result {
+    // Buffer successfully closed.
     CloseBufferSuccess success = 1;
+    // Error occurred while closing buffer.
     Error error = 2;
   }
 }
@@ -487,7 +520,9 @@ message SaveBufferRequest {
 message SaveBufferResponse {
   // Result of the operation.
   oneof result {
+    // Buffer successfully saved.
     SaveBufferSuccess success = 1;
+    // Error occurred while saving buffer.
     Error error = 2;
   }
 }
@@ -524,7 +559,9 @@ message GetBufferContentRequest {
 message GetBufferContentResponse {
   // Result of the operation.
   oneof result {
+    // Buffer content successfully retrieved.
     GetBufferContentSuccess success = 1;
+    // Error occurred while getting buffer content.
     Error error = 2;
   }
 }

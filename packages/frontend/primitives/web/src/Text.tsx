@@ -1,6 +1,6 @@
-import { forwardRef, type CSSProperties } from 'react';
-import type { TextProps } from './types';
-import { resolveColor } from './utils/tokens';
+import { type CSSProperties, forwardRef } from "react";
+import type { TextProps } from "./types";
+import { resolveColor } from "./utils/tokens";
 
 type TextElement = HTMLSpanElement;
 
@@ -11,7 +11,7 @@ type TextElement = HTMLSpanElement;
 export const Text = forwardRef<TextElement, TextProps>(function Text(
   {
     children,
-    as: Component = 'span',
+    as: Component = "span",
     className,
     style,
     testId,
@@ -24,7 +24,7 @@ export const Text = forwardRef<TextElement, TextProps>(function Text(
     maxLines,
     mono,
   },
-  ref
+  ref,
 ) {
   const computedStyle: CSSProperties = {
     fontSize: size ? `var(--font-size-${size})` : undefined,
@@ -32,26 +32,27 @@ export const Text = forwardRef<TextElement, TextProps>(function Text(
     color: resolveColor(color),
     textAlign: align,
     textDecoration: decoration,
-    fontFamily: mono ? 'var(--font-mono)' : undefined,
+    fontFamily: mono ? "var(--font-mono)" : undefined,
     // Single-line truncation
     ...(truncate && {
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
     }),
     // Multi-line truncation (webkit-based)
-    ...(maxLines && !truncate && {
-      display: '-webkit-box',
-      WebkitLineClamp: maxLines,
-      WebkitBoxOrient: 'vertical',
-      overflow: 'hidden',
-    }),
+    ...(maxLines &&
+      !truncate && {
+        display: "-webkit-box",
+        WebkitLineClamp: maxLines,
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
+      }),
     ...style,
   };
 
   // Filter out undefined values
   const cleanStyle = Object.fromEntries(
-    Object.entries(computedStyle).filter(([, v]) => v !== undefined)
+    Object.entries(computedStyle).filter(([, v]) => v !== undefined),
   ) as CSSProperties;
 
   return (

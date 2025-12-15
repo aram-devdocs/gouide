@@ -8,3 +8,6 @@ description = "Gouide workspace model and buffer management"
 
 [dependencies]
 thiserror = { workspace = true }
+
+[lints]
+workspace = true

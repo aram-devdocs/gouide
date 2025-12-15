@@ -1,5 +1,8 @@
 # Gouide IDE
 
+[![CI](https://github.com/aram-devdocs/gouide/actions/workflows/ci.yml/badge.svg)](https://github.com/aram-devdocs/gouide/actions/workflows/ci.yml)
+[![Typos](https://github.com/aram-devdocs/gouide/actions/workflows/typos.yml/badge.svg)](https://github.com/aram-devdocs/gouide/actions/workflows/typos.yml)
+
 A modern IDE built with Rust and TypeScript.
 
 ## Prerequisites

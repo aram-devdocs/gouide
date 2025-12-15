@@ -7,7 +7,7 @@
 
 import { invoke } from "@tauri-apps/api/core";
 import type { CoreTransport } from "./transport.js";
-import type { DaemonInfo, WelcomeInfo, PingResult } from "./types.js";
+import type { DaemonInfo, PingResult, WelcomeInfo } from "./types.js";
 
 /**
  * Application settings for window behavior.
@@ -57,10 +57,7 @@ export class TauriTransport implements CoreTransport {
    * This is the main entry point for "attach-or-spawn" logic.
    * If no daemon is running, it will spawn one before connecting.
    */
-  async ensureAndConnect(
-    clientId: string,
-    clientName: string
-  ): Promise<WelcomeInfo> {
+  async ensureAndConnect(clientId: string, clientName: string): Promise<WelcomeInfo> {
     return invoke<WelcomeInfo>("ensure_and_connect", {
       clientId,
       clientName,

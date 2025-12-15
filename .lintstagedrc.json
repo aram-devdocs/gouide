@@ -1,0 +1,8 @@
+{
+  "*.{ts,tsx,js,jsx,json}": ["biome check --write --no-errors-on-unmatched"],
+  "*.proto": ["bash -c 'pnpm --filter @gouide/protocol codegen:lint'"],
+  "core/**/*.rs": [
+    "bash -c 'cd core && cargo fmt --'",
+    "bash -c 'cd core && cargo clippy --all-targets -- -D warnings'"
+  ]
+}

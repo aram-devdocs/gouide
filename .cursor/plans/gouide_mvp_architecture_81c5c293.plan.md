@@ -35,7 +35,7 @@ todos:
       - scaffold-monorepo
   - id: ci-contract-enforcement
     content: "Add pre-commit + CI: run buf lint/breaking, run codegen (non-committed), then build/test Rust + TS via turbo so protocol/core changes that break any frontend are flagged."
-    status: pending
+    status: done
     dependencies:
       - codegen-pipeline
       - define-protocol
@@ -602,10 +602,51 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
   - Updated test to verify reconnection with new token
 - Verified: TypeScript compiles, Rust tests pass (19 tests), daemon sidecar prepared, UI state updates correctly
 
-### TODO 8: CI Contract Enforcement ⬜ NEXT
+### TODO 8: CI Contract Enforcement ✅ DONE
 
-- Add pre-commit hooks: fmt, clippy, lint, typecheck
-- Add buf lint and buf breaking checks
-- Configure GitHub Actions matrix (Windows/macOS/Linux)
-- Ensure protocol changes that break any frontend are flagged
-- Add semver policy for protocol package
+**Biome Migration:**
+- Installed Biome v2.3.8 and created biome.json with primitives boundary rule
+- Updated all package.json scripts to use Biome for linting and formatting
+- Removed ESLint and Prettier dependencies
+- Verified primitives import boundary enforcement works
+
+**Rust Hardening:**
+- Created core/rustfmt.toml with strict formatting rules
+- Added workspace-level clippy lints (pedantic, nursery, correctness)
+- Updated all crate Cargo.toml files to inherit workspace lints
+- Created core/deny.toml for supply chain security (cargo-deny)
+- Configured to forbid unsafe code, warn on unwrap/expect/panic
+
+**Pre-commit Hooks:**
+- Installed husky + lint-staged
+- Created .husky/pre-commit hook
+- Created .lintstagedrc.json (Biome, buf lint, cargo fmt)
+- Updated package.json prepare script
+
+**GitHub Actions CI:**
+- Created .github/workflows/ci.yml with multi-platform matrix (Ubuntu, macOS, Windows)
+- Protocol validation job (buf lint, buf breaking)
+- TypeScript job (codegen, Biome, typecheck, build, test)
+- Rust job (fmt check, clippy, test, build)
+- Rust security job (cargo-deny, cargo-audit)
+- Dependency review for PRs
+
+**Additional Workflows:**
+- Created .github/workflows/typos.yml for spell checking
+- Created .typos.toml configuration
+- Created .github/dependabot.yml for automated dependency updates
+
+**Protocol Contract Enforcement:**
+- Created protocol/VERSIONING.md documenting semver policy
+- Created scripts/verify-protocol-contract.sh for manual verification
+- CI enforces: protocol changes → codegen → typecheck/build all consumers
+
+**Strict Mode & Documentation:**
+- Enabled exactOptionalPropertyTypes in TypeScript base config
+- Added CI badges to README.md
+
+**Verification:**
+- Biome check passes on all TypeScript/JavaScript code
+- Cargo clippy runs successfully with workspace lints
+- Pre-commit hooks configured and tested
+- All configuration files created and validated

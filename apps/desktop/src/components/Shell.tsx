@@ -1,7 +1,7 @@
-import { Sidebar } from "./Sidebar";
 import { EditorArea } from "./EditorArea";
-import { StatusBar } from "./StatusBar";
 import styles from "./Shell.module.css";
+import { Sidebar } from "./Sidebar";
+import { StatusBar } from "./StatusBar";
 
 export function Shell() {
   return (

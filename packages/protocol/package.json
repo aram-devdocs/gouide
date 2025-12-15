@@ -22,7 +22,7 @@
     "clean": "rm -rf dist .turbo src/generated",
     "codegen": "buf generate --template ../../protocol/buf.gen.yaml ../../protocol",
     "codegen:lint": "buf lint ../../protocol",
-    "codegen:breaking": "buf breaking ../../protocol --against .git#branch=main"
+    "codegen:breaking": "cd ../.. && buf breaking protocol --against '.git#branch=origin/main,subdir=protocol'"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.2.3",

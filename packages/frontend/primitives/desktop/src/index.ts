@@ -7,4 +7,4 @@
  * future platform-specific optimizations if needed.
  */
 
-export * from '@gouide/primitives-web';
+export * from "@gouide/primitives-web";

@@ -24,11 +24,11 @@ import "gouide/v1/common.proto";
 
 // Handshake service for establishing client-daemon connections.
 // Must be called first before any other RPCs.
-service Handshake {
+service HandshakeService {
   // Initiate connection handshake. Returns Welcome on success.
   // Fast-fails with HandshakeError if incompatible.
   // Note: Named "Establish" to avoid conflict with gRPC client "connect" method.
-  rpc Establish(Hello) returns (EstablishResponse);
+  rpc Establish(EstablishRequest) returns (EstablishResponse);
 
   // Graceful disconnect with optional reason.
   rpc Disconnect(DisconnectRequest) returns (DisconnectResponse);
@@ -43,6 +43,29 @@ service Handshake {
 
 // Initial handshake message from client to daemon.
 // Must be the first message on any new connection.
+message EstablishRequest {
+  // Protocol version the client implements (e.g., "1.0.0").
+  string protocol_version = 1;
+
+  // Unique identifier for this client instance (UUID).
+  // Used for session tracking and duplicate detection.
+  string client_id = 2;
+
+  // Human-readable client name (e.g., "Gouide Desktop", "Gouide CLI").
+  string client_name = 3;
+
+  // Client version string (e.g., "0.1.0-alpha").
+  string client_version = 4;
+
+  // Client capabilities for feature negotiation.
+  Capabilities capabilities = 5;
+
+  // Optional: reconnection token from previous Welcome.
+  // Allows daemon to restore session state on reconnect.
+  string reconnect_token = 6;
+}
+
+// Deprecated: Use EstablishRequest instead.
 message Hello {
   // Protocol version the client implements (e.g., "1.0.0").
   string protocol_version = 1;
@@ -106,7 +129,9 @@ message Welcome {
 message EstablishResponse {
   // Result of the connection attempt.
   oneof result {
+    // Operation succeeded.
     Welcome welcome = 1;
+    // Error if operation failed.
     HandshakeError error = 2;
   }
 }
@@ -117,6 +142,7 @@ message EstablishResponse {
 
 // Handshake failure reasons.
 enum HandshakeErrorCode {
+  // Default unspecified error code.
   HANDSHAKE_ERROR_CODE_UNSPECIFIED = 0;
   // Protocol version mismatch.
   HANDSHAKE_ERROR_CODE_VERSION_MISMATCH = 1;
@@ -185,7 +211,7 @@ message PingResponse {
 // ============================================================================
 
 // Control service for cross-cutting operations.
-service Control {
+service ControlService {
   // Cancel a pending request by ID.
   // Works for any long-running operation.
   rpc Cancel(CancelRequest) returns (CancelResponse);

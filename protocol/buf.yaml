@@ -23,9 +23,3 @@ lint:
 breaking:
   use:
     - FILE
-  except:
-    # Allow comment changes without breaking change detection
-    - FIELD_SAME_DOCUMENTATION
-    - MESSAGE_SAME_DOCUMENTATION
-    - SERVICE_SAME_DOCUMENTATION
-    - RPC_SAME_DOCUMENTATION

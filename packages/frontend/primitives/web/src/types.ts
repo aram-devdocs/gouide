@@ -3,8 +3,14 @@
  * These types define the interface that all platform implementations must satisfy
  */
 
-import type { SpacingToken, ColorToken, FontSizeToken, FontWeightToken, RadiusToken } from '@gouide/frontend-theme';
-import type { CSSProperties, ReactNode } from 'react';
+import type {
+  ColorToken,
+  FontSizeToken,
+  FontWeightToken,
+  RadiusToken,
+  SpacingToken,
+} from "@gouide/frontend-theme";
+import type { CSSProperties, ReactNode } from "react";
 
 /**
  * Base props shared by all primitives
@@ -20,14 +26,20 @@ export interface PrimitiveBaseProps {
  */
 export interface BoxProps extends PrimitiveBaseProps {
   children?: ReactNode;
-  as?: 'div' | 'span' | 'section' | 'article' | 'aside' | 'header' | 'footer' | 'main' | 'nav';
+  as?: "div" | "span" | "section" | "article" | "aside" | "header" | "footer" | "main" | "nav";
 
   // Layout
-  display?: 'flex' | 'block' | 'inline' | 'inline-flex' | 'grid' | 'none';
-  flexDirection?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
-  alignItems?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
-  justifyContent?: 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'space-evenly';
-  flexWrap?: 'wrap' | 'nowrap' | 'wrap-reverse';
+  display?: "flex" | "block" | "inline" | "inline-flex" | "grid" | "none";
+  flexDirection?: "row" | "column" | "row-reverse" | "column-reverse";
+  alignItems?: "flex-start" | "flex-end" | "center" | "stretch" | "baseline";
+  justifyContent?:
+    | "flex-start"
+    | "flex-end"
+    | "center"
+    | "space-between"
+    | "space-around"
+    | "space-evenly";
+  flexWrap?: "wrap" | "nowrap" | "wrap-reverse";
   flex?: number | string;
   flexGrow?: number;
   flexShrink?: number;
@@ -66,12 +78,12 @@ export interface BoxProps extends PrimitiveBaseProps {
   borderRadius?: RadiusToken;
 
   // Overflow
-  overflow?: 'visible' | 'hidden' | 'scroll' | 'auto';
-  overflowX?: 'visible' | 'hidden' | 'scroll' | 'auto';
-  overflowY?: 'visible' | 'hidden' | 'scroll' | 'auto';
+  overflow?: "visible" | "hidden" | "scroll" | "auto";
+  overflowX?: "visible" | "hidden" | "scroll" | "auto";
+  overflowY?: "visible" | "hidden" | "scroll" | "auto";
 
   // Position
-  position?: 'relative' | 'absolute' | 'fixed' | 'sticky';
+  position?: "relative" | "absolute" | "fixed" | "sticky";
   top?: string | number;
   right?: string | number;
   bottom?: string | number;
@@ -82,11 +94,11 @@ export interface BoxProps extends PrimitiveBaseProps {
 /**
  * Stack - vertical or horizontal flex container with consistent spacing
  */
-export interface StackProps extends Omit<BoxProps, 'display' | 'flexDirection' | 'gap'> {
-  direction?: 'vertical' | 'horizontal';
+export interface StackProps extends Omit<BoxProps, "display" | "flexDirection" | "gap"> {
+  direction?: "vertical" | "horizontal";
   spacing?: SpacingToken;
-  align?: 'start' | 'end' | 'center' | 'stretch';
-  justify?: 'start' | 'end' | 'center' | 'between' | 'around';
+  align?: "start" | "end" | "center" | "stretch";
+  justify?: "start" | "end" | "center" | "between" | "around";
 }
 
 /**
@@ -94,16 +106,16 @@ export interface StackProps extends Omit<BoxProps, 'display' | 'flexDirection' |
  */
 export interface TextProps extends PrimitiveBaseProps {
   children?: ReactNode;
-  as?: 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'label' | 'strong' | 'em';
+  as?: "span" | "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "label" | "strong" | "em";
 
   // Typography
   size?: FontSizeToken;
   weight?: FontWeightToken;
   color?: ColorToken;
-  align?: 'left' | 'center' | 'right';
+  align?: "left" | "center" | "right";
 
   // Decoration
-  decoration?: 'none' | 'underline' | 'line-through';
+  decoration?: "none" | "underline" | "line-through";
 
   // Overflow
   truncate?: boolean;
@@ -124,7 +136,7 @@ export interface PressableProps extends PrimitiveBaseProps {
   disabled?: boolean;
 
   // Accessibility
-  role?: 'button' | 'link' | 'menuitem' | 'tab';
+  role?: "button" | "link" | "menuitem" | "tab";
   ariaLabel?: string;
   ariaPressed?: boolean;
   ariaExpanded?: boolean;

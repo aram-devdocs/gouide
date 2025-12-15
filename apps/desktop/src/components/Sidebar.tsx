@@ -10,9 +10,7 @@ export function Sidebar() {
         <div className={styles.placeholder}>
           <span className={styles.icon}>📁</span>
           <p>No folder opened</p>
-          <p className={styles.hint}>
-            Open a folder to start working
-          </p>
+          <p className={styles.hint}>Open a folder to start working</p>
         </div>
       </div>
     </aside>

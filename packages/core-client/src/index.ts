@@ -18,29 +18,25 @@
  * ```
  */
 
-// Main client
-export { GouideClient } from "./client.js";
 export type {
-  GouideClientOptions,
   ClientEvent,
   ClientEventListener,
+  GouideClientOptions,
 } from "./client.js";
+// Main client
+export { GouideClient } from "./client.js";
 
 // Transport interface
 export type { CoreTransport } from "./transport.js";
-
 // Types
-export type {
-  DaemonInfo,
-  WelcomeInfo,
-  PingResult,
-  ConnectionState,
-} from "./types.js";
-
 // Re-export protocol types for convenience
 export type {
-  Hello,
-  Welcome,
   Capabilities,
+  ConnectionState,
+  DaemonInfo,
+  Hello,
+  PingResult,
+  Welcome,
+  WelcomeInfo,
   WorkspaceLimits,
 } from "./types.js";

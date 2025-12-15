@@ -3,15 +3,15 @@
  * Web platform primitives (DOM-based)
  */
 
-export { Box } from './Box';
-export { Stack } from './Stack';
-export { Text } from './Text';
-export { Pressable } from './Pressable';
+export { Box } from "./Box";
+export { Pressable } from "./Pressable";
+export { Stack } from "./Stack";
+export { Text } from "./Text";
 
 export type {
-  PrimitiveBaseProps,
   BoxProps,
+  PressableProps,
+  PrimitiveBaseProps,
   StackProps,
   TextProps,
-  PressableProps,
-} from './types';
+} from "./types";
