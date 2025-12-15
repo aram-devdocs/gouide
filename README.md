@@ -30,6 +30,25 @@ pnpm typecheck
 pnpm test
 ```
 
+## UI Development with Storybook
+
+View and develop UI components in isolation:
+
+```bash
+# Run Storybook
+pnpm storybook
+
+# Build Storybook static site
+pnpm storybook:build
+
+# Validate story coverage (all components must have stories)
+pnpm validate:stories
+```
+
+Opens at **http://localhost:6006**
+
+All 23 components in `@gouide/frontend-ui` have comprehensive Storybook stories for interactive testing and documentation. See [`packages/frontend/shared/ui/STORYBOOK.md`](packages/frontend/shared/ui/STORYBOOK.md) for details.
+
 ## Repository Structure
 
 ```

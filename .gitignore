@@ -60,3 +60,6 @@ coverage/
 .cache/
 tmp/
 temp/
+
+*storybook.log
+storybook-static

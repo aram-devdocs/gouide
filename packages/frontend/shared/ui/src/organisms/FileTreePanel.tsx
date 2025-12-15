@@ -3,7 +3,7 @@
  * File tree with search and expansion capabilities
  */
 
-import { useState } from "react";
+import { useFileSearch } from "@gouide/frontend-hooks";
 import { Box } from "../atoms/Box";
 import { FileTreeItem } from "../molecules/FileTreeItem";
 import { SearchBar } from "../molecules/SearchBar";
@@ -45,32 +45,8 @@ export function FileTreePanel({
   onFileSelect,
   onToggle,
 }: FileTreePanelProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Filter files based on search query
-  const filterFiles = (nodes: FileTreeNode[], query: string): FileTreeNode[] => {
-    if (!query) return nodes;
-
-    const lowerQuery = query.toLowerCase();
-    return nodes.reduce<FileTreeNode[]>((acc, node) => {
-      const matchesName = node.name.toLowerCase().includes(lowerQuery);
-      const filteredChildren = node.children ? filterFiles(node.children, query) : [];
-
-      if (matchesName || filteredChildren.length > 0) {
-        const newNode: FileTreeNode = {
-          ...node,
-        };
-        if (filteredChildren.length > 0) {
-          newNode.children = filteredChildren;
-        } else if (node.children) {
-          newNode.children = node.children;
-        }
-        acc.push(newNode);
-      }
-
-      return acc;
-    }, []);
-  };
+  // Use custom hook for file search functionality
+  const { searchQuery, setSearchQuery, filterFiles } = useFileSearch();
 
   // Render file tree recursively
   const renderFileTree = (nodes: FileTreeNode[], depth = 0): React.ReactElement[] => {
@@ -128,7 +104,7 @@ export function FileTreePanel({
     });
   };
 
-  const filteredFiles = filterFiles(files, searchQuery);
+  const filteredFiles = filterFiles(files);
 
   return (
     <Box display="flex" flexDirection="column" height="100%" backgroundColor="bg-primary">

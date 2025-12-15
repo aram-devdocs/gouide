@@ -1,8 +1,8 @@
 /**
  * MonacoEditorTemplate
- * Template for rendering Monaco code editor with full state management
+ * Template for rendering Monaco code editor with auto-save functionality
  *
- * This template manages editor state internally including:
+ * This template uses useEditorAutoSave hook for state management:
  * - Dirty state (unsaved changes indicator)
  * - Auto-save with debouncing (1 second)
  * - Keyboard shortcuts (Cmd+S to save)
@@ -10,12 +10,12 @@
  * - Editor configuration
  */
 
-import Editor, { type OnMount } from "@monaco-editor/react";
-import type { editor } from "monaco-editor";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEditorAutoSave } from "@gouide/frontend-hooks";
+import Editor from "@monaco-editor/react";
 import { Badge } from "../atoms/Badge";
 import { Box } from "../atoms/Box";
 import { Text } from "../atoms/Text";
+import { getFilename, getLanguageFromPath } from "../utils/fileUtils";
 
 export interface MonacoEditorTemplateProps {
   /** File path for language detection and display */
@@ -26,52 +26,11 @@ export interface MonacoEditorTemplateProps {
   onSave: (content: string) => Promise<void>;
 }
 
-// Detect language from file extension
-function getLanguageFromPath(path: string): string {
-  const ext = path.split(".").pop()?.toLowerCase();
-
-  const languageMap: Record<string, string> = {
-    js: "javascript",
-    jsx: "javascript",
-    ts: "typescript",
-    tsx: "typescript",
-    json: "json",
-    md: "markdown",
-    html: "html",
-    css: "css",
-    scss: "scss",
-    rs: "rust",
-    toml: "toml",
-    yaml: "yaml",
-    yml: "yaml",
-    xml: "xml",
-    sh: "shell",
-    bash: "shell",
-    proto: "proto",
-    py: "python",
-    rb: "ruby",
-    go: "go",
-    java: "java",
-    c: "c",
-    cpp: "cpp",
-    h: "c",
-    hpp: "cpp",
-  };
-
-  return languageMap[ext || ""] || "plaintext";
-}
-
-// Get filename from path
-function getFilename(path: string): string {
-  const parts = path.split("/");
-  return parts[parts.length - 1] || "Untitled";
-}
-
 /**
  * MonacoEditorTemplate - full-featured code editor
  *
  * Renders Monaco editor with auto-save, keyboard shortcuts, and
- * language detection. Manages all editor UI state internally.
+ * language detection. Uses useEditorAutoSave hook for state management.
  *
  * @example
  * ```tsx
@@ -83,92 +42,15 @@ function getFilename(path: string): string {
  * ```
  */
 export function MonacoEditorTemplate({ path, value, onSave }: MonacoEditorTemplateProps) {
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const [isDirty, setIsDirty] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const saveTimeoutRef = useRef<number | null>(null);
-  const lastSavedValueRef = useRef(value);
+  // Use custom hook for editor state management
+  const { isDirty, isSaving, handleEditorDidMount, handleEditorChange } = useEditorAutoSave({
+    initialValue: value,
+    onSave,
+    autoSaveDelay: 1000,
+  });
 
   const language = getLanguageFromPath(path);
   const filename = getFilename(path);
-
-  // Save now (called by Cmd+S or auto-save)
-  const handleSaveNow = useCallback(async () => {
-    if (!editorRef.current || isSaving) return;
-
-    const currentValue = editorRef.current.getValue();
-    if (currentValue === lastSavedValueRef.current) {
-      setIsDirty(false);
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      await onSave(currentValue);
-      lastSavedValueRef.current = currentValue;
-      setIsDirty(false);
-    } catch (error) {
-      console.error("Failed to save file:", error);
-      // Could show error notification here
-    } finally {
-      setIsSaving(false);
-    }
-  }, [isSaving, onSave]);
-
-  // Handle editor mount
-  const handleEditorDidMount: OnMount = useCallback(
-    (editor, monaco) => {
-      editorRef.current = editor;
-
-      // Set up keyboard shortcuts
-      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-        handleSaveNow();
-      });
-
-      // Focus editor
-      editor.focus();
-    },
-    [handleSaveNow],
-  );
-
-  // Handle content changes
-  const handleEditorChange = useCallback(
-    (newValue: string | undefined) => {
-      if (newValue === undefined) return;
-
-      // Mark as dirty
-      const changed = newValue !== lastSavedValueRef.current;
-      setIsDirty(changed);
-
-      // Clear existing auto-save timer
-      if (saveTimeoutRef.current) {
-        window.clearTimeout(saveTimeoutRef.current);
-      }
-
-      // Set up auto-save (1 second debounce)
-      if (changed) {
-        saveTimeoutRef.current = window.setTimeout(() => {
-          handleSaveNow();
-        }, 1000);
-      }
-    },
-    [handleSaveNow],
-  );
-
-  // Clean up timer on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        window.clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Update last saved value when prop value changes (file switch)
-  useEffect(() => {
-    lastSavedValueRef.current = value;
-    setIsDirty(false);
-  }, [value]);
 
   return (
     <Box display="flex" flexDirection="column" height="100%" overflow="hidden">

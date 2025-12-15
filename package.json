@@ -29,7 +29,10 @@
     "desktop": "pnpm --filter @gouide/desktop tauri dev",
     "desktop:build": "pnpm --filter @gouide/desktop tauri build",
     "validate": "./scripts/validate-ui-architecture.sh",
-    "validate:baseline": "./scripts/validate-ui-architecture.sh --baseline-update"
+    "validate:baseline": "./scripts/validate-ui-architecture.sh --baseline-update",
+    "storybook": "pnpm --filter @gouide/frontend-ui storybook",
+    "storybook:build": "turbo run build-storybook --filter=@gouide/frontend-ui",
+    "validate:stories": "turbo run validate:stories --filter=@gouide/frontend-ui"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.8",

@@ -210,6 +210,12 @@ run_all_validators() {
         "template-only" \
         "$VALIDATORS_DIR/detect-template-only-violations.sh" \
         "Template-Only Architecture Enforcement"
+
+    # 6. Storybook Story Coverage
+    run_validator \
+        "story-files" \
+        "$VALIDATORS_DIR/validate-story-files.sh" \
+        "Storybook Story File Coverage"
 }
 
 # Print final summary

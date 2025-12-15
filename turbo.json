@@ -42,6 +42,25 @@
       "cache": true,
       "outputs": ["src/generated/**"],
       "inputs": ["../../protocol/**/*.proto"]
+    },
+    "storybook": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
+    "build-storybook": {
+      "dependsOn": ["^build"],
+      "outputs": ["storybook-static/**"],
+      "inputs": ["src/**/*.tsx", "src/**/*.stories.tsx", ".storybook/**"]
+    },
+    "validate:stories": {
+      "dependsOn": [],
+      "cache": true,
+      "inputs": [
+        "src/**/*.tsx",
+        "src/**/*.stories.tsx",
+        "../../scripts/validators/validate-story-files.sh"
+      ]
     }
   }
 }

@@ -1,9 +1,9 @@
 /**
  * FileTreeItem molecule
  * File tree node with icon, text, and expand button
+ * Uses CSS-only hover effects (no state management)
  */
 
-import { useState } from "react";
 import { Box } from "../atoms/Box";
 import { Icon } from "../atoms/Icon";
 import { Text } from "../atoms/Text";
@@ -45,8 +45,6 @@ export function FileTreeItem({
   onToggle,
   onSelect,
 }: FileTreeItemProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   const icon = isDirectory ? (isExpanded ? "📂" : "📁") : "📄";
   const expandIcon = isLoading ? "⟳" : isExpanded ? "▼" : "▶";
 
@@ -59,65 +57,73 @@ export function FileTreeItem({
     onToggle?.();
   };
 
+  // Generate unique ID for CSS scoping
+  const itemId = `file-tree-item-${depth}-${name.replace(/[^a-z0-9]/gi, "-")}`;
+
   return (
-    <Box
-      display="flex"
-      alignItems="center"
-      gap="xs"
-      padding="xs"
-      style={{
-        paddingLeft: `${depth * 16}px`,
-        backgroundColor: isSelected
-          ? "var(--bg-active)"
-          : isHovered
-            ? "var(--bg-hover)"
-            : undefined,
-        cursor: "pointer",
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={handleClick}
-      onKeyDown={(e: React.KeyboardEvent) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          handleClick();
-        }
-      }}
-      role="button"
-      tabIndex={0}
-    >
-      {isDirectory && (
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          style={{
-            width: "16px",
-            cursor: "pointer",
-          }}
-          onClick={handleToggleClick}
-          onKeyDown={(e: React.KeyboardEvent) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              // biome-ignore lint/suspicious/noExplicitAny: KeyboardEvent to MouseEvent conversion for handler
-              handleToggleClick(e as any);
-            }
-          }}
-          role="button"
-          tabIndex={0}
-        >
-          <Icon size="sm" color={hasError ? "error" : "fg-secondary"}>
-            {expandIcon}
-          </Icon>
-        </Box>
-      )}
-      {!isDirectory && <Box width={16} />}
-      <Icon size="sm" color={hasError ? "error" : "fg-secondary"}>
-        {icon}
-      </Icon>
-      <Text size="sm" color={isSelected ? "fg-primary" : "fg-secondary"}>
-        {name}
-      </Text>
-    </Box>
+    <>
+      <style>
+        {`
+          [data-tree-item-id="${itemId}"]:not([data-selected="true"]):hover {
+            background-color: var(--bg-hover) !important;
+          }
+        `}
+      </style>
+      <Box
+        data-tree-item-id={itemId}
+        data-selected={isSelected}
+        display="flex"
+        alignItems="center"
+        gap="xs"
+        padding="xs"
+        style={{
+          paddingLeft: `${depth * 16}px`,
+          backgroundColor: isSelected ? "var(--bg-active)" : undefined,
+          cursor: "pointer",
+        }}
+        onClick={handleClick}
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        {isDirectory && (
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            style={{
+              width: "16px",
+              cursor: "pointer",
+            }}
+            onClick={handleToggleClick}
+            onKeyDown={(e: React.KeyboardEvent) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                // biome-ignore lint/suspicious/noExplicitAny: KeyboardEvent to MouseEvent conversion for handler
+                handleToggleClick(e as any);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+          >
+            <Icon size="sm" color={hasError ? "error" : "fg-secondary"}>
+              {expandIcon}
+            </Icon>
+          </Box>
+        )}
+        {!isDirectory && <Box width={16} />}
+        <Icon size="sm" color={hasError ? "error" : "fg-secondary"}>
+          {icon}
+        </Icon>
+        <Text size="sm" color={isSelected ? "fg-primary" : "fg-secondary"}>
+          {name}
+        </Text>
+      </Box>
+    </>
   );
 }

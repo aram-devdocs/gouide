@@ -73,6 +73,12 @@ jobs:
       - name: TypeScript type check
         run: pnpm run typecheck
 
+      - name: Validate Storybook coverage
+        run: pnpm validate:stories
+
+      - name: Build Storybook
+        run: pnpm --filter @gouide/frontend-ui build-storybook
+
       - name: Build all packages
         run: pnpm run build
 

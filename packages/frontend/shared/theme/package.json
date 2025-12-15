@@ -13,7 +13,8 @@
     "./tokens": {
       "types": "./src/tokens.ts",
       "import": "./src/tokens.ts"
-    }
+    },
+    "./variables.css": "./src/variables.css"
   },
   "scripts": {
     "build": "tsc",

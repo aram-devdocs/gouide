@@ -2,16 +2,17 @@
  * SidebarTemplate
  * Template for rendering the workspace sidebar with file explorer
  *
- * This template manages file tree expansion state internally and uses
+ * This template uses useFileTreeExpansion hook for state management and uses
  * FileTreePanel organism and EmptyState template for rendering.
  */
 
 import type { FileTreeNode } from "@gouide/frontend-hooks";
-import { useCallback, useState } from "react";
+import { useFileTreeExpansion } from "@gouide/frontend-hooks";
 import { Box } from "../atoms/Box";
 import { Button } from "../atoms/Button";
 import { Text } from "../atoms/Text";
 import { FileTreePanel } from "../organisms/FileTreePanel";
+import { getWorkspaceName } from "../utils/fileUtils";
 import { EmptyState } from "./EmptyState";
 
 export interface SidebarTemplateProps {
@@ -27,18 +28,11 @@ export interface SidebarTemplateProps {
   onLoadDirectory: (path: string) => Promise<void>;
 }
 
-// Extract workspace name from path
-function getWorkspaceName(workspacePath: string | null): string | null {
-  if (!workspacePath) return null;
-  const parts = workspacePath.split("/");
-  return parts[parts.length - 1] || parts[parts.length - 2] || null;
-}
-
 /**
  * SidebarTemplate - workspace file explorer sidebar
  *
  * Renders the sidebar with workspace header, open folder button,
- * and file tree. Manages expansion state internally.
+ * and file tree. Uses useFileTreeExpansion hook for state management.
  *
  * @example
  * ```tsx
@@ -48,6 +42,7 @@ function getWorkspaceName(workspacePath: string | null): string | null {
  *   files={workspace.files}
  *   onOpenWorkspace={workspace.openWorkspace}
  *   onFileSelect={workspace.openFile}
+ *   onLoadDirectory={workspace.loadDirectory}
  * />
  * ```
  */
@@ -58,29 +53,10 @@ export function SidebarTemplate({
   onFileSelect,
   onLoadDirectory,
 }: SidebarTemplateProps) {
-  // Manage file tree expansion state internally (start with everything collapsed)
-  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
-
-  const toggleExpanded = useCallback(
-    (path: string, node: FileTreeNode) => {
-      setExpandedPaths((prev) => {
-        const next = new Set(prev);
-        if (next.has(path)) {
-          // Collapse
-          next.delete(path);
-        } else {
-          // Expand
-          next.add(path);
-          // Lazy load children if not loaded yet
-          if (node.isDirectory && !node.childrenLoaded) {
-            onLoadDirectory(path);
-          }
-        }
-        return next;
-      });
-    },
-    [onLoadDirectory],
-  );
+  // Use custom hook for file tree expansion state
+  const { expandedPaths, toggleExpanded } = useFileTreeExpansion({
+    onLoadDirectory,
+  });
 
   const workspaceName = getWorkspaceName(workspacePath);
 
