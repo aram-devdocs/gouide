@@ -55,4 +55,19 @@ cargo build --release || exit 1
 cd ..
 
 echo ""
+
+# Desktop app checks
+echo "🖥️  Desktop app validation..."
+echo "  → Running cargo fmt check..."
+cd apps/desktop/src-tauri && cargo fmt --all -- --check || exit 1
+
+echo "  → Running cargo clippy..."
+cargo clippy --all-targets --all-features -- -D warnings || exit 1
+
+echo "  → Running cargo build..."
+cargo build --release || exit 1
+
+cd ../../..
+
+echo ""
 echo "✅ All pre-push checks passed! Pushing to remote..."

@@ -2,6 +2,9 @@
 //!
 //! Reads the daemon metadata file to find a running daemon instance.
 
+// Allow unsafe code for platform-specific libc calls
+#![allow(unsafe_code)]
+
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;

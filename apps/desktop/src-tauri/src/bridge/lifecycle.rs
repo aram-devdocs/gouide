@@ -1,5 +1,8 @@
 //! Daemon lifecycle management: attach-or-spawn logic.
 
+// Allow unsafe code for platform-specific libc calls
+#![allow(unsafe_code)]
+
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::time::Duration;
@@ -69,7 +72,10 @@ fn get_daemon_path(_app: &AppHandle) -> Result<PathBuf, String> {
             // Walk up to find workspace root
             let mut search_path = exe_dir.to_path_buf();
             for _ in 0..8 {
-                for subpath in &["core/target/release/gouide-daemon", "core/target/debug/gouide-daemon"] {
+                for subpath in &[
+                    "core/target/release/gouide-daemon",
+                    "core/target/debug/gouide-daemon",
+                ] {
                     let daemon_path = search_path.join(subpath);
                     if daemon_path.exists() {
                         debug!("Using daemon path relative to exe: {:?}", daemon_path);

@@ -2,9 +2,9 @@
 
 use std::sync::Arc;
 
-use gouide_protocol::handshake_client::HandshakeClient;
+use gouide_protocol::handshake_service_client::HandshakeServiceClient;
 use gouide_protocol::{
-    establish_response, Capabilities, DisconnectRequest, Hello, PingRequest, Timestamp,
+    establish_response, Capabilities, DisconnectRequest, EstablishRequest, PingRequest, Timestamp,
 };
 use tokio::net::UnixStream;
 use tokio::sync::Mutex;
@@ -48,6 +48,7 @@ pub struct PingResponse {
 }
 
 /// State of the daemon client connection.
+#[allow(dead_code)]
 struct ConnectionState {
     channel: Channel,
     client_id: String,
@@ -81,9 +82,7 @@ impl DaemonClient {
         let channel = create_uds_channel(endpoint).await?;
 
         // Perform handshake
-        let mut handshake_client = HandshakeClient::new(channel.clone());
-
-        let hello = Hello {
+        let establish_request = EstablishRequest {
             protocol_version: "1.0.0".to_string(),
             client_id: client_id.clone(),
             client_name,
@@ -92,8 +91,10 @@ impl DaemonClient {
             reconnect_token: String::new(),
         };
 
-        debug!("Sending Hello to daemon");
-        let response = handshake_client.establish(hello).await?;
+        debug!("Sending EstablishRequest to daemon");
+        let response = HandshakeServiceClient::new(channel.clone())
+            .establish(establish_request)
+            .await?;
         let result = response
             .into_inner()
             .result
@@ -125,12 +126,10 @@ impl DaemonClient {
 
                 Ok(welcome_info)
             }
-            establish_response::Result::Error(error) => {
-                Err(ClientError::HandshakeFailed(format!(
-                    "Code {}: {}",
-                    error.code, error.message
-                )))
-            }
+            establish_response::Result::Error(error) => Err(ClientError::HandshakeFailed(format!(
+                "Code {}: {}",
+                error.code, error.message
+            ))),
         }
     }
 
@@ -139,8 +138,7 @@ impl DaemonClient {
         let mut state = self.state.lock().await;
 
         if let Some(conn) = state.take() {
-            let mut client = HandshakeClient::new(conn.channel);
-            let _ = client
+            let _ = HandshakeServiceClient::new(conn.channel)
                 .disconnect(DisconnectRequest {
                     reason: "Client closing".to_string(),
                 })
@@ -164,13 +162,13 @@ impl DaemonClient {
         let start = std::time::Instant::now();
         let client_time = current_timestamp();
 
-        let mut client = HandshakeClient::new(conn.channel.clone());
-        let response = client
+        let response = HandshakeServiceClient::new(conn.channel.clone())
             .ping(PingRequest {
                 client_time: Some(client_time),
             })
             .await?;
 
+        #[allow(clippy::cast_possible_truncation)]
         let round_trip_ms = start.elapsed().as_millis() as u64;
         let pong = response.into_inner();
 

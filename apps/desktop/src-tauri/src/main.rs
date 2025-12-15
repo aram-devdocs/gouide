@@ -1,9 +1,14 @@
+//! Gouide Desktop application entry point.
+
 // Prevents additional console window on Windows in release
 #![cfg_attr(
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
+// Binary doesn't directly use all lib dependencies
+#![allow(unused_crate_dependencies)]
 
+#[allow(unreachable_pub)]
 mod bridge;
 
 use tauri::Manager;
@@ -14,13 +19,16 @@ use bridge::tray::create_tray;
 
 fn main() {
     // Initialize tracing for logging
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::from_default_env()
-                .add_directive("gouide_desktop=debug".parse().unwrap())
-                .add_directive("tonic=info".parse().unwrap()),
-        )
-        .init();
+    #[allow(clippy::unwrap_used)]
+    {
+        tracing_subscriber::fmt()
+            .with_env_filter(
+                tracing_subscriber::EnvFilter::from_default_env()
+                    .add_directive("gouide_desktop=debug".parse().unwrap())
+                    .add_directive("tonic=info".parse().unwrap()),
+            )
+            .init();
+    }
 
     info!("Starting Gouide Desktop");
 
@@ -72,5 +80,8 @@ fn main() {
             bridge::commands::shutdown_daemon,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .unwrap_or_else(|e| {
+            tracing::error!("Fatal error while running Tauri application: {e}");
+            std::process::exit(1);
+        });
 }
