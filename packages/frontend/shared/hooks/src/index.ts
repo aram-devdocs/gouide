@@ -5,6 +5,14 @@
 
 export type { ConnectionState, DaemonInfo } from "@gouide/core-client";
 export {
+  ANIMATION_DURATION,
+  useAnimateOnMount,
+  useDelayedVisibility,
+  useStaggeredDelay,
+} from "./useAnimation";
+export type { CommandPaletteState, UseCommandPaletteReturn } from "./useCommandPalette";
+export { useCommandPalette } from "./useCommandPalette";
+export {
   DaemonProvider,
   useDaemonConnection,
 } from "./useDaemonConnection";
@@ -22,6 +30,10 @@ export {
   type UseFileTreeExpansionReturn,
   useFileTreeExpansion,
 } from "./useFileTreeExpansion";
+export type { Keybinding, ShortcutHandler } from "./useKeyboardShortcuts";
+export { matchesKeybinding, parseKeybinding, useKeyboardShortcuts } from "./useKeyboardShortcuts";
+export type { UsePanelManagerReturn } from "./usePanelManager";
+export { usePanelManager } from "./usePanelManager";
 export {
   type Buffer,
   type FileTreeNode,

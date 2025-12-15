@@ -16,6 +16,7 @@ export interface InputProps {
   size?: "sm" | "md" | "lg";
   type?: "text" | "password" | "email" | "search";
   ariaLabel?: string;
+  autoFocus?: boolean;
 }
 
 const variantStyles: Record<
@@ -55,6 +56,7 @@ export function Input({
   size = "md",
   type = "text",
   ariaLabel,
+  autoFocus,
 }: InputProps) {
   const variantStyle = variantStyles[variant];
   const sizeStyle = sizeStyles[size];
@@ -72,7 +74,8 @@ export function Input({
         onChange={handleChange}
         placeholder={placeholder}
         disabled={disabled}
-        {...(ariaLabel && { "aria-label": ariaLabel })}
+        {...(ariaLabel !== undefined && { "aria-label": ariaLabel })}
+        {...(autoFocus !== undefined && { autoFocus })}
         style={{
           width: "100%",
           backgroundColor: `var(--${variantStyle.bg})`,

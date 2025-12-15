@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@gouide/protocol": "workspace:*",
-    "@gouide/core-client": "workspace:*"
+    "@gouide/core-client": "workspace:*",
+    "fuse.js": "^7.0.0"
   },
   "devDependencies": {
     "@gouide/typescript-config": "workspace:*",

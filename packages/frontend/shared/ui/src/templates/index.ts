@@ -22,6 +22,8 @@ export type {
   WorkspaceData,
 } from "./AppShell";
 export { AppShell } from "./AppShell";
+export type { CommandPaletteTemplateProps } from "./CommandPaletteTemplate";
+export { CommandPaletteTemplate } from "./CommandPaletteTemplate";
 export type { EditorAreaTemplateProps } from "./EditorAreaTemplate";
 export { EditorAreaTemplate } from "./EditorAreaTemplate";
 export type { EditorLayoutProps } from "./EditorLayout";
@@ -31,6 +33,8 @@ export type { EmptyStateProps } from "./EmptyState";
 export { EmptyState } from "./EmptyState";
 export type { MonacoEditorTemplateProps } from "./MonacoEditorTemplate";
 export { MonacoEditorTemplate } from "./MonacoEditorTemplate";
+export type { PanelLayoutProps } from "./PanelLayout";
+export { PanelLayout } from "./PanelLayout";
 // Individual templates (for advanced use cases)
 export type { SidebarTemplateProps } from "./SidebarTemplate";
 export { SidebarTemplate } from "./SidebarTemplate";

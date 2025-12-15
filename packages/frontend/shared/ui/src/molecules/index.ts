@@ -11,11 +11,21 @@
  * - No business logic or data fetching
  */
 
+export type {
+  AnimatedPanelProps,
+  PanelAnimation,
+  PanelPosition,
+} from "./AnimatedPanel";
+export { AnimatedPanel } from "./AnimatedPanel";
 export type { CardProps } from "./Card";
 export { Card } from "./Card";
 export type { FileTreeItemProps } from "./FileTreeItem";
 export { FileTreeItem } from "./FileTreeItem";
 export type { FormFieldProps } from "./FormField";
 export { FormField } from "./FormField";
+export type { GlassModalProps } from "./GlassModal";
+export { GlassModal } from "./GlassModal";
+export type { PanelHeaderProps } from "./PanelHeader";
+export { PanelHeader } from "./PanelHeader";
 export type { SearchBarProps } from "./SearchBar";
 export { SearchBar } from "./SearchBar";

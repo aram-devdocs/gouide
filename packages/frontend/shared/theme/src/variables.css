@@ -44,6 +44,45 @@
   --sidebar-width: 250px;
   --statusbar-height: 22px;
   --titlebar-height: 30px;
+
+  /* Glassmorphism */
+  --glass-blur-none: 0px;
+  --glass-blur-sm: 4px;
+  --glass-blur-md: 8px;
+  --glass-blur-lg: 16px;
+  --glass-blur-xl: 24px;
+
+  --glass-opacity-transparent: 0;
+  --glass-opacity-light: 0.3;
+  --glass-opacity-medium: 0.5;
+  --glass-opacity-heavy: 0.7;
+  --glass-opacity-opaque: 0.95;
+
+  --glass-border-opacity-none: 0;
+  --glass-border-opacity-subtle: 0.1;
+  --glass-border-opacity-visible: 0.2;
+  --glass-border-opacity-strong: 0.3;
+
+  /* Animation */
+  --anim-duration-instant: 0ms;
+  --anim-duration-fast: 150ms;
+  --anim-duration-normal: 250ms;
+  --anim-duration-slow: 350ms;
+  --anim-duration-slower: 500ms;
+
+  --anim-easing-linear: linear;
+  --anim-easing-in: cubic-bezier(0.4, 0, 1, 1);
+  --anim-easing-out: cubic-bezier(0, 0, 0.2, 1);
+  --anim-easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --anim-easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Shadows */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  --shadow-glass: 0 8px 32px 0 rgba(139, 92, 246, 0.15);
 }
 
 /* Global resets */

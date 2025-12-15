@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "id": "deep-purple-cyan",
+    "name": "Deep Purple Cyan",
+    "version": "1.0.0",
+    "author": "Gouide Team"
+  },
+  "colors": {
+    "bg": {
+      "primary": "#1a0f2e",
+      "secondary": "#221740",
+      "tertiary": "#2d1f52",
+      "hover": "#392864",
+      "active": "#453076"
+    },
+    "fg": {
+      "primary": "#e9d5ff",
+      "secondary": "#c4b5fd",
+      "muted": "#9f8fce",
+      "inverse": "#1a0f2e"
+    },
+    "accent": "#8b5cf6",
+    "border": "#392864",
+    "error": "#f87171",
+    "success": "#34d399",
+    "warning": "#fbbf24",
+    "info": "#06b6d4",
+    "glass": {
+      "tint": "#8b5cf6",
+      "highlight": "#a78bfa",
+      "shadow": "#1a0f2e"
+    }
+  },
+  "glass": {
+    "blur": {
+      "none": 0,
+      "sm": 4,
+      "md": 8,
+      "lg": 16,
+      "xl": 24
+    },
+    "opacity": {
+      "transparent": 0,
+      "light": 0.3,
+      "medium": 0.5,
+      "heavy": 0.7,
+      "opaque": 0.95
+    },
+    "borderOpacity": {
+      "none": 0,
+      "subtle": 0.1,
+      "visible": 0.2,
+      "strong": 0.3
+    }
+  },
+  "animation": {
+    "duration": {
+      "instant": 0,
+      "fast": 150,
+      "normal": 250,
+      "slow": 350,
+      "slower": 500
+    },
+    "easing": {
+      "linear": "linear",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeInOut": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "breakpoints": {
+    "sm": 640,
+    "md": 768,
+    "lg": 1024,
+    "xl": 1280,
+    "xxl": 1536
+  },
+  "shadows": {
+    "none": "none",
+    "sm": "0 1px 2px 0 rgba(0, 0, 0, 0.3)",
+    "md": "0 4px 6px -1px rgba(0, 0, 0, 0.4)",
+    "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
+    "xl": "0 20px 25px -5px rgba(0, 0, 0, 0.6)",
+    "glass": "0 8px 32px 0 rgba(139, 92, 246, 0.15)"
+  }
+}

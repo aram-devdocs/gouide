@@ -12,10 +12,14 @@
  * - Represent complete UI sections
  */
 
+export type { CommandPaletteProps } from "./CommandPalette";
+export { CommandPalette } from "./CommandPalette";
 export type { EditorPanelProps } from "./EditorPanel";
 export { EditorPanel } from "./EditorPanel";
 export type { FileTreeNode, FileTreePanelProps } from "./FileTreePanel";
 export { FileTreePanel } from "./FileTreePanel";
+export type { GlassSidebarProps } from "./GlassSidebar";
+export { GlassSidebar } from "./GlassSidebar";
 export type { NavBarProps } from "./NavBar";
 export { NavBar } from "./NavBar";
 export type { SidebarProps } from "./Sidebar";
