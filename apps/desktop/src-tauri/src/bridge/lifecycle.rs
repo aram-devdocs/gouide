@@ -1,12 +1,21 @@
 //! Daemon lifecycle management: attach-or-spawn logic.
 
 use std::path::PathBuf;
+use std::sync::OnceLock;
 use std::time::Duration;
 use tauri::AppHandle;
+use tokio::sync::Mutex;
 use tokio::time::sleep;
 use tracing::{debug, error, info};
 
 use super::discovery::{default_lock_path, discover_daemon, DaemonMetadata};
+
+/// Global mutex to ensure only one daemon spawn happens at a time.
+static DAEMON_ENSURE_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+fn get_ensure_lock() -> &'static Mutex<()> {
+    DAEMON_ENSURE_LOCK.get_or_init(|| Mutex::new(()))
+}
 
 /// Maximum time to wait for daemon socket to become available.
 const SOCKET_READY_TIMEOUT: Duration = Duration::from_secs(3);
@@ -176,8 +185,12 @@ async fn spawn_daemon(app: &AppHandle) -> Result<(), String> {
 /// Ensure a daemon is running, spawning one if necessary.
 ///
 /// Returns the daemon metadata on success.
+/// Uses a global lock to prevent multiple simultaneous spawn attempts.
 pub async fn ensure_daemon(app: &AppHandle) -> DaemonStartResult {
-    // First, check if a daemon is already running
+    // Acquire lock to prevent concurrent spawn attempts
+    let _guard = get_ensure_lock().lock().await;
+
+    // Check if a daemon is already running (recheck after acquiring lock)
     if let Some(metadata) = discover_daemon() {
         info!(
             daemon_id = %metadata.daemon_id,

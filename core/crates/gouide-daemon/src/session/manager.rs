@@ -103,15 +103,14 @@ impl SessionManager {
             });
         }
 
-        // Check for duplicate client ID
+        // Check for duplicate client ID and handle reconnection
         if sessions.contains_key(&hello.client_id) {
-            warn!(client_id = %hello.client_id, "Duplicate client ID");
-            return Err(HandshakeError {
-                code: HandshakeErrorCode::DuplicateClient as i32,
-                message: format!("Client {} already connected", hello.client_id),
-                supported_versions: vec![],
-                retry_hint: None,
-            });
+            info!(
+                client_id = %hello.client_id,
+                "Client reconnecting - removing old session"
+            );
+            // Allow reconnection by removing the old session
+            sessions.remove(&hello.client_id);
         }
 
         // Validate protocol version
@@ -211,18 +210,20 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_duplicate_client_rejected() {
+    async fn test_duplicate_client_reconnects() {
         let config = DaemonConfig::default();
         let manager = SessionManager::new(config);
 
         let hello = test_hello("dup-client");
-        manager.register(&hello).await.unwrap();
+        let session1 = manager.register(&hello).await.unwrap();
+        let token1 = session1.reconnect_token.clone();
 
-        let result = manager.register(&hello).await;
-        assert!(result.is_err());
+        // Same client reconnecting - should succeed and get a new token
+        let session2 = manager.register(&hello).await.unwrap();
+        let token2 = session2.reconnect_token.clone();
 
-        let error = result.unwrap_err();
-        assert_eq!(error.code, HandshakeErrorCode::DuplicateClient as i32);
+        assert_ne!(token1, token2);
+        assert_eq!(manager.active_count().await, 1);
     }
 
     #[tokio::test]

@@ -173,6 +173,47 @@ export class GouideClient {
   }
 
   /**
+   * Ensure daemon is running and connect to it (attach-or-spawn).
+   *
+   * This is the recommended way to connect in desktop apps.
+   * If no daemon is running, one will be spawned automatically.
+   *
+   * @returns Welcome info on success
+   * @throws Error if daemon spawn or connection fails
+   */
+  async ensureAndConnect(): Promise<WelcomeInfo> {
+    if (this.state.status === "connected") {
+      return this.state.welcome;
+    }
+
+    this.setState({ status: "connecting" });
+
+    try {
+      // Check if transport supports ensureAndConnect
+      if ("ensureAndConnect" in this.transport) {
+        const welcome = await (this.transport as any).ensureAndConnect(
+          this.clientId,
+          this.clientName
+        );
+        this.setState({ status: "connected", welcome });
+        return welcome;
+      } else {
+        // Fallback to regular connect
+        const welcome = await this.transport.connect(
+          this.clientId,
+          this.clientName
+        );
+        this.setState({ status: "connected", welcome });
+        return welcome;
+      }
+    } catch (e) {
+      const error = e instanceof Error ? e.message : String(e);
+      this.setState({ status: "error", error });
+      throw e;
+    }
+  }
+
+  /**
    * Disconnect from the daemon.
    */
   async disconnect(): Promise<void> {

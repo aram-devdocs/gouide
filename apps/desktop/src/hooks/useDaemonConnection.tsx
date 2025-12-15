@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
 import { GouideClient, type ConnectionState, type DaemonInfo } from "@gouide/core-client";
@@ -34,6 +35,7 @@ const client = new GouideClient({
 export function DaemonProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ConnectionState>({ status: "disconnected" });
   const [daemonInfo, setDaemonInfo] = useState<DaemonInfo | null>(null);
+  const connectingRef = useRef(false);
 
   // Subscribe to client events
   useEffect(() => {
@@ -44,12 +46,15 @@ export function DaemonProvider({ children }: { children: ReactNode }) {
           break;
         case "connected":
           setState({ status: "connected", welcome: event.welcome });
+          connectingRef.current = false;
           break;
         case "disconnected":
           setState({ status: "disconnected" });
+          connectingRef.current = false;
           break;
         case "error":
           setState({ status: "error", error: event.error });
+          connectingRef.current = false;
           break;
       }
     });
@@ -59,30 +64,62 @@ export function DaemonProvider({ children }: { children: ReactNode }) {
 
   // Discover and connect on mount
   useEffect(() => {
-    discoverAndConnect();
+    let mounted = true;
+
+    const init = async () => {
+      // Prevent multiple simultaneous connections (React StrictMode causes double mount)
+      if (connectingRef.current) {
+        return;
+      }
+      connectingRef.current = true;
+
+      try {
+        // Use client.ensureAndConnect which properly updates state
+        await client.ensureAndConnect();
+
+        if (!mounted) return;
+
+        // Discover daemon info for display
+        const info = await transport.discover();
+        if (mounted) {
+          setDaemonInfo(info);
+        }
+      } catch (e) {
+        // Error is already handled by client state management
+        if (!mounted) return;
+      } finally {
+        connectingRef.current = false;
+      }
+    };
+
+    init();
+
+    return () => {
+      mounted = false;
+      // Don't disconnect on unmount - the daemon should stay alive
+      // This cleanup just prevents state updates after unmount
+    };
   }, []);
 
-  const discoverAndConnect = async () => {
+  const discoverAndConnect = useCallback(async () => {
+    if (connectingRef.current) {
+      return;
+    }
+    connectingRef.current = true;
+
     try {
-      setState({ status: "connecting" });
-
-      // Use ensureAndConnect which will spawn daemon if not running
-      const welcome = await transport.ensureAndConnect(
-        client.clientId,
-        client.clientName
-      );
-
-      // Update state with the welcome info
-      setState({ status: "connected", welcome });
+      // Use client.ensureAndConnect which properly updates state
+      await client.ensureAndConnect();
 
       // Discover daemon info for display
       const info = await transport.discover();
       setDaemonInfo(info);
     } catch (e) {
-      const error = e instanceof Error ? e.message : String(e);
-      setState({ status: "error", error });
+      // Error is already handled by client state management
+    } finally {
+      connectingRef.current = false;
     }
-  };
+  }, []);
 
   const connect = useCallback(async () => {
     if (state.status === "connected") return;
@@ -96,8 +133,9 @@ export function DaemonProvider({ children }: { children: ReactNode }) {
   const retry = useCallback(async () => {
     setState({ status: "disconnected" });
     setDaemonInfo(null);
+    connectingRef.current = false; // Reset the flag
     await discoverAndConnect();
-  }, []);
+  }, [discoverAndConnect]);
 
   return (
     <DaemonContext.Provider

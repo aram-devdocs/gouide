@@ -569,7 +569,7 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Created `apps/desktop/src-tauri/src/bridge/lifecycle.rs`:
   - `get_daemon_path()`: Locates daemon binary (sidecar or dev paths)
   - `spawn_daemon()`: Starts daemon, waits for socket readiness (3s timeout)
-  - `ensure_daemon()`: Returns `AlreadyRunning | Spawned | Failed`
+  - `ensure_daemon()`: Returns `AlreadyRunning | Spawned | Failed` with global mutex to prevent race conditions
   - `stop_daemon()`: Sends SIGTERM for graceful shutdown
 - Created `apps/desktop/src-tauri/src/bridge/tray.rs`:
   - `create_tray()`: System tray icon with menu
@@ -591,9 +591,16 @@ Each TODO is designed to be completed in a single session. Complete in order. Th
 - Updated `apps/desktop/src-tauri/tauri.conf.json`: Added `externalBin` for sidecar bundling
 - Updated `apps/desktop/src-tauri/capabilities/default.json`: Added store permissions
 - Created `scripts/prepare-sidecar.sh`: Builds daemon and copies with target triple suffix
+- Updated `scripts/install.sh`: Added protobuf installation for all platforms (macOS, Debian, Fedora, Arch)
 - Updated `packages/core-client/src/tauri.ts`: Added `ensureAndConnect`, settings methods
-- Updated `apps/desktop/src/hooks/useDaemonConnection.tsx`: Uses `ensureAndConnect` for auto-spawn
-- Verified: TypeScript compiles, Rust builds, daemon sidecar prepared
+- Updated `packages/core-client/src/client.ts`: Added `ensureAndConnect()` method for proper state management
+- Updated `apps/desktop/src/hooks/useDaemonConnection.tsx`:
+  - Uses `client.ensureAndConnect()` for proper state flow (fixes UI not updating)
+  - Added `connectingRef` guard to prevent React StrictMode duplicate connections
+- Updated `core/crates/gouide-daemon/src/session/manager.rs`:
+  - Changed duplicate client behavior to auto-disconnect old session and allow reconnection
+  - Updated test to verify reconnection with new token
+- Verified: TypeScript compiles, Rust tests pass (19 tests), daemon sidecar prepared, UI state updates correctly
 
 ### TODO 8: CI Contract Enforcement ⬜ NEXT
 

@@ -42,6 +42,7 @@ install_debian() {
         libjavascriptcoregtk-4.1-dev \
         librsvg2-dev \
         libssl-dev \
+        protobuf-compiler \
         curl \
         wget \
         file
@@ -57,6 +58,7 @@ install_fedora() {
         javascriptcoregtk4.1-devel \
         librsvg2-devel \
         openssl-devel \
+        protobuf-compiler \
         curl \
         wget \
         file
@@ -71,6 +73,7 @@ install_arch() {
         webkit2gtk-4.1 \
         librsvg \
         openssl \
+        protobuf \
         curl \
         wget \
         file
@@ -87,6 +90,13 @@ install_macos() {
         xcode-select --install
     else
         info "Xcode Command Line Tools already installed"
+    fi
+    # Install protobuf compiler (required for Rust protocol codegen)
+    if ! command -v protoc &> /dev/null; then
+        info "Installing protobuf..."
+        brew install protobuf
+    else
+        info "protobuf already installed: $(protoc --version)"
     fi
 }
 
