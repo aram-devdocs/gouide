@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "id": "space-gray-metal",
+    "name": "Space Gray Metal",
+    "version": "1.0.0",
+    "author": "Gouide Team",
+    "mode": "dark",
+    "description": "Sleek metallic dark theme inspired by MacBook Pro Space Gray"
+  },
+  "colors": {
+    "bg": {
+      "primary": "#1d1d1f",
+      "secondary": "#2c2c2e",
+      "tertiary": "#3a3a3c",
+      "hover": "#48484a",
+      "active": "#5a5a5c"
+    },
+    "fg": {
+      "primary": "#f5f5f7",
+      "secondary": "#d1d1d6",
+      "muted": "#98989d",
+      "inverse": "#1d1d1f"
+    },
+    "accent": "#0071e3",
+    "border": "#48484a",
+    "error": "#ff453a",
+    "success": "#32d74b",
+    "warning": "#ffd60a",
+    "info": "#64d2ff",
+    "glass": {
+      "tint": "#2c2c2e",
+      "highlight": "#48484a",
+      "shadow": "#000000"
+    }
+  },
+  "glass": {
+    "blur": {
+      "none": 0,
+      "sm": 6,
+      "md": 12,
+      "lg": 20,
+      "xl": 32
+    },
+    "opacity": {
+      "transparent": 0,
+      "light": 0.25,
+      "medium": 0.55,
+      "heavy": 0.75,
+      "opaque": 0.97
+    },
+    "borderOpacity": {
+      "none": 0,
+      "subtle": 0.12,
+      "visible": 0.24,
+      "strong": 0.36
+    }
+  },
+  "animation": {
+    "duration": {
+      "instant": 0,
+      "fast": 120,
+      "normal": 200,
+      "slow": 300,
+      "slower": 450
+    },
+    "easing": {
+      "linear": "linear",
+      "easeIn": "cubic-bezier(0.42, 0, 1, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.58, 1)",
+      "easeInOut": "cubic-bezier(0.42, 0, 0.58, 1)",
+      "spring": "cubic-bezier(0.28, 0.84, 0.42, 1)"
+    }
+  },
+  "breakpoints": {
+    "sm": 640,
+    "md": 768,
+    "lg": 1024,
+    "xl": 1280,
+    "xxl": 1536
+  },
+  "shadows": {
+    "none": "none",
+    "sm": "0 1px 3px 0 rgba(0, 0, 0, 0.4)",
+    "md": "0 4px 8px -2px rgba(0, 0, 0, 0.5)",
+    "lg": "0 12px 20px -4px rgba(0, 0, 0, 0.6)",
+    "xl": "0 24px 32px -8px rgba(0, 0, 0, 0.7)",
+    "glass": "0 8px 32px 0 rgba(0, 113, 227, 0.12)"
+  }
+}

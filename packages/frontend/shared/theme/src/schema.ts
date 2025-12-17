@@ -7,6 +7,8 @@ export interface ThemeMetadata {
   name: string;
   version: string;
   author?: string;
+  mode?: "light" | "dark"; // Theme mode for light/dark variants
+  description?: string; // Brief description of the theme
 }
 
 export interface ThemeColors {
@@ -121,6 +123,8 @@ export const themeJsonSchema = {
         name: { type: "string", minLength: 1 },
         version: { type: "string", pattern: "^\\d+\\.\\d+\\.\\d+$" },
         author: { type: "string" },
+        mode: { type: "string", enum: ["light", "dark"] },
+        description: { type: "string" },
       },
     },
     colors: {

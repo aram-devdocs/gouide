@@ -24,27 +24,35 @@ export const colors = {
   warning: "#cca700",
 } as const;
 
-// Spacing scale (in pixels)
+// Spacing scale (golden ratio: φ ≈ 1.618)
+// Each step multiplies by φ for harmonious proportions
 export const spacing = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  xxs: 2, // Base
+  xs: 4, // 2 × 2
+  sm: 6, // ~4 × 1.5
+  md: 10, // ~6 × 1.618
+  lg: 16, // ~10 × 1.618
+  xl: 26, // ~16 × 1.618
+  xxl: 42, // ~26 × 1.618
 } as const;
 
-// Typography
+// Typography - Apple-inspired font system
 export const typography = {
   fontFamily: {
-    sans: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
-    mono: "'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace",
+    sans: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif",
+    mono: "'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', Consolas, monospace",
   },
   fontSize: {
-    sm: 12,
-    base: 13,
-    lg: 14,
+    xs: 11, // Small labels
+    sm: 12, // Secondary text
+    base: 13, // Body text (Apple standard)
+    md: 14, // Emphasized text
+    lg: 16, // Headings
+    xl: 18, // Large headings
+    xxl: 24, // Display text
   },
   fontWeight: {
+    light: 300,
     normal: 400,
     medium: 500,
     semibold: 600,
@@ -55,25 +63,40 @@ export const typography = {
     normal: 1.5,
     relaxed: 1.75,
   },
+  letterSpacing: {
+    tight: "-0.015em", // Headings
+    normal: "0",
+    relaxed: "0.025em", // Small caps
+  },
 } as const;
 
-// Layout dimensions
+// Layout dimensions (golden ratio proportions)
 export const layout = {
-  sidebarWidth: 250,
-  statusbarHeight: 22,
+  sidebar: {
+    default: 260, // Default width
+    min: 160, // Minimum width
+    max: 420, // Maximum width (~260 × φ)
+  },
+  bottomPanel: {
+    default: 260, // Default height
+    min: 160, // Minimum height
+    max: 420, // Maximum height
+  },
+  statusbarHeight: 22, // macOS standard
   titlebarHeight: 30,
 } as const;
 
-// Border radii
+// Border radii (golden ratio progression)
 export const radii = {
   none: 0,
-  sm: 2,
-  md: 4,
-  lg: 8,
+  sm: 4,
+  md: 6, // ~4 × 1.5
+  lg: 10, // ~6 × 1.618
+  xl: 16, // ~10 × 1.618
   full: 9999,
 } as const;
 
-// Glassmorphism tokens
+// Glassmorphism tokens - advanced glass effects
 export const glass = {
   blur: {
     none: 0,
@@ -94,6 +117,23 @@ export const glass = {
     subtle: 0.1,
     visible: 0.2,
     strong: 0.3,
+  },
+  gradient: {
+    // Gradient overlay settings
+    enabled: true,
+    angle: 135, // Default gradient angle (deg)
+    opacity: 0.1, // Subtle overlay
+  },
+  noise: {
+    // Texture noise for depth
+    enabled: true,
+    opacity: 0.02, // Very subtle grain
+  },
+  reflection: {
+    // Highlight reflection on top edge
+    enabled: true,
+    position: "top",
+    intensity: 0.15,
   },
 } as const;
 
@@ -143,6 +183,7 @@ export type Tokens = typeof tokens;
 export type SpacingToken = keyof typeof spacing;
 export type FontSizeToken = keyof typeof typography.fontSize;
 export type FontWeightToken = keyof typeof typography.fontWeight;
+export type LetterSpacingToken = keyof typeof typography.letterSpacing;
 export type RadiusToken = keyof typeof radii;
 export type GlassBlurToken = keyof typeof glass.blur;
 export type GlassOpacityToken = keyof typeof glass.opacity;

@@ -4,7 +4,7 @@
 
 import Fuse from "fuse.js";
 
-export type CommandCategory = "file" | "edit" | "view" | "search" | "settings" | "help";
+export type CommandCategory = "file" | "edit" | "view" | "search" | "settings" | "theme" | "help";
 
 export interface Command {
   id: string;

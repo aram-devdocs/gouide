@@ -48,7 +48,12 @@ export function generateCSSVariables(): string {
   lines.push("");
 
   // Layout
-  lines.push(`  --sidebar-width: ${layout.sidebarWidth}px;`);
+  lines.push(`  --sidebar-width: ${layout.sidebar.default}px;`);
+  lines.push(`  --sidebar-width-min: ${layout.sidebar.min}px;`);
+  lines.push(`  --sidebar-width-max: ${layout.sidebar.max}px;`);
+  lines.push(`  --bottom-panel-height: ${layout.bottomPanel.default}px;`);
+  lines.push(`  --bottom-panel-height-min: ${layout.bottomPanel.min}px;`);
+  lines.push(`  --bottom-panel-height-max: ${layout.bottomPanel.max}px;`);
   lines.push(`  --statusbar-height: ${layout.statusbarHeight}px;`);
   lines.push(`  --titlebar-height: ${layout.titlebarHeight}px;`);
   lines.push("");

@@ -4,11 +4,20 @@
 
 export type PanelPosition = "left" | "right" | "bottom" | "center" | "hidden";
 
-export type PanelId = "file-tree" | "terminal" | "docs" | "search" | "command-palette";
+export type PanelId = "file-tree" | "terminal" | "docs" | "search" | "command-palette" | "settings";
 
 export interface PanelContent {
   type: string;
   props?: Record<string, unknown>;
+}
+
+/**
+ * Constraints defining where a panel can be positioned
+ */
+export interface PanelPositionConstraints {
+  allowedPositions: PanelPosition[]; // Which positions this panel can occupy
+  preferredPosition: PanelPosition; // Default position
+  canBeModal: boolean; // Can open as center modal
 }
 
 export interface PanelConfig {
@@ -20,6 +29,8 @@ export interface PanelConfig {
   maxSize?: number;
   resizable?: boolean;
   content: PanelContent;
+  constraints: PanelPositionConstraints; // Positioning constraints
+  priority?: number; // For conflict resolution (higher priority wins)
 }
 
 export interface PanelState {
@@ -59,6 +70,12 @@ export const DEFAULT_PANELS: PanelConfig[] = [
     content: {
       type: "file-tree",
     },
+    constraints: {
+      allowedPositions: ["left", "right"],
+      preferredPosition: "left",
+      canBeModal: false,
+    },
+    priority: 100, // High priority - file tree stays in place
   },
   {
     id: "terminal",
@@ -71,6 +88,12 @@ export const DEFAULT_PANELS: PanelConfig[] = [
     content: {
       type: "terminal",
     },
+    constraints: {
+      allowedPositions: ["bottom", "left", "right"],
+      preferredPosition: "bottom",
+      canBeModal: false,
+    },
+    priority: 90, // Medium-high priority
   },
   {
     id: "docs",
@@ -83,6 +106,48 @@ export const DEFAULT_PANELS: PanelConfig[] = [
     content: {
       type: "docs",
     },
+    constraints: {
+      allowedPositions: ["right", "left", "center"],
+      preferredPosition: "right",
+      canBeModal: true,
+    },
+    priority: 70, // Medium priority - can be moved
+  },
+  {
+    id: "search",
+    position: "left",
+    isVisible: false,
+    size: DEFAULT_PANEL_SIZES.left,
+    minSize: MIN_PANEL_SIZES.left,
+    maxSize: MAX_PANEL_SIZES.left,
+    resizable: true,
+    content: {
+      type: "search",
+    },
+    constraints: {
+      allowedPositions: ["left", "right", "bottom", "center"],
+      preferredPosition: "left",
+      canBeModal: true,
+    },
+    priority: 60, // Lower priority - flexible positioning
+  },
+  {
+    id: "settings",
+    position: "right",
+    isVisible: false,
+    size: DEFAULT_PANEL_SIZES.right,
+    minSize: MIN_PANEL_SIZES.right,
+    maxSize: MAX_PANEL_SIZES.right,
+    resizable: true,
+    content: {
+      type: "settings",
+    },
+    constraints: {
+      allowedPositions: ["right", "left", "center"],
+      preferredPosition: "right",
+      canBeModal: true,
+    },
+    priority: 50, // Lowest priority - very flexible
   },
   {
     id: "command-palette",
@@ -92,8 +157,135 @@ export const DEFAULT_PANELS: PanelConfig[] = [
     content: {
       type: "command-palette",
     },
+    constraints: {
+      allowedPositions: ["center"],
+      preferredPosition: "center",
+      canBeModal: true,
+    },
+    priority: 999, // Highest priority - always center modal
   },
 ];
+
+/**
+ * Result of attempting to move a panel to a new position
+ */
+export type MoveResult =
+  | {
+      success: true;
+      movedPanels: PanelId[]; // List of panels that were moved (including the target)
+    }
+  | {
+      success: false;
+      reason: string; // Why the move failed
+      suggestion?: PanelPosition; // Alternative position suggestion
+    };
+
+/**
+ * Resolve conflicts when moving a panel to a position
+ * Returns the final position for the panel and identifies panels that need to move
+ */
+export function resolvePositionConflict(
+  panels: Map<PanelId, PanelConfig>,
+  targetPanelId: PanelId,
+  desiredPosition: PanelPosition,
+  options: { force?: boolean } = {},
+): MoveResult {
+  const targetPanel = panels.get(targetPanelId);
+
+  if (!targetPanel) {
+    return {
+      success: false,
+      reason: `Panel ${targetPanelId} not found`,
+    };
+  }
+
+  // Check if position is allowed for this panel
+  if (
+    !targetPanel.constraints.allowedPositions.includes(desiredPosition) &&
+    desiredPosition !== "hidden"
+  ) {
+    return {
+      success: false,
+      reason: `Panel ${targetPanelId} cannot be positioned at ${desiredPosition}`,
+      suggestion: targetPanel.constraints.preferredPosition,
+    };
+  }
+
+  // Special case: center modal or hidden can have multiple panels
+  if (desiredPosition === "center" || desiredPosition === "hidden") {
+    return {
+      success: true,
+      movedPanels: [targetPanelId],
+    };
+  }
+
+  // Find existing panel at the desired position
+  const existingPanel = Array.from(panels.values()).find(
+    (p) => p.position === desiredPosition && p.id !== targetPanelId && p.isVisible,
+  );
+
+  if (!existingPanel) {
+    // No conflict - position is free
+    return {
+      success: true,
+      movedPanels: [targetPanelId],
+    };
+  }
+
+  // Conflict detected - compare priorities
+  const targetPriority = targetPanel.priority ?? 0;
+  const existingPriority = existingPanel.priority ?? 0;
+
+  if (options.force || targetPriority > existingPriority) {
+    // Target panel wins - move existing panel to its preferred position
+    const movedPanels = [targetPanelId];
+
+    // Try to move existing panel to an alternative position
+    const alternativePosition = existingPanel.constraints.preferredPosition;
+
+    // If alternative is same as current, try other allowed positions
+    const alternativePos =
+      alternativePosition !== desiredPosition
+        ? alternativePosition
+        : existingPanel.constraints.allowedPositions.find((p) => p !== desiredPosition);
+
+    if (alternativePos && alternativePos !== "hidden") {
+      // Check if alternative position is free
+      const alternativeTaken = Array.from(panels.values()).find(
+        (p) => p.position === alternativePos && p.id !== existingPanel.id && p.isVisible,
+      );
+
+      if (!alternativeTaken) {
+        movedPanels.push(existingPanel.id);
+      } else {
+        // Hide existing panel if no alternative is available
+        movedPanels.push(existingPanel.id);
+      }
+    }
+
+    return {
+      success: true,
+      movedPanels,
+    };
+  }
+
+  // Existing panel wins - suggest alternative for target
+  const suggestion = targetPanel.constraints.allowedPositions.find((p) => {
+    if (p === "center" || p === "hidden") return true;
+    return !Array.from(panels.values()).some((panel) => panel.position === p && panel.isVisible);
+  });
+
+  const result: MoveResult = {
+    success: false,
+    reason: `Position ${desiredPosition} is occupied by higher priority panel ${existingPanel.id}`,
+  };
+
+  if (suggestion !== undefined) {
+    result.suggestion = suggestion;
+  }
+
+  return result;
+}
 
 /**
  * Create initial panel state

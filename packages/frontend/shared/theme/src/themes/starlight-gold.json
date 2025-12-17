@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "id": "starlight-gold",
+    "name": "Starlight Gold",
+    "version": "1.0.0",
+    "author": "Gouide Team",
+    "mode": "light",
+    "description": "Warm, elegant light theme inspired by MacBook Air M2 Starlight"
+  },
+  "colors": {
+    "bg": {
+      "primary": "#faf8f5",
+      "secondary": "#f0ebe5",
+      "tertiary": "#e0d9d0",
+      "hover": "#d4ccc1",
+      "active": "#c4bab0"
+    },
+    "fg": {
+      "primary": "#1d1d1f",
+      "secondary": "#3a3a3c",
+      "muted": "#6e6e73",
+      "inverse": "#faf8f5"
+    },
+    "accent": "#c77d00",
+    "border": "#d4ccc1",
+    "error": "#d70015",
+    "success": "#248a3d",
+    "warning": "#bf5000",
+    "info": "#0077cc",
+    "glass": {
+      "tint": "#faf8f5",
+      "highlight": "#ffffff",
+      "shadow": "#3a3a3c"
+    }
+  },
+  "glass": {
+    "blur": {
+      "none": 0,
+      "sm": 6,
+      "md": 12,
+      "lg": 20,
+      "xl": 32
+    },
+    "opacity": {
+      "transparent": 0,
+      "light": 0.35,
+      "medium": 0.65,
+      "heavy": 0.85,
+      "opaque": 0.98
+    },
+    "borderOpacity": {
+      "none": 0,
+      "subtle": 0.12,
+      "visible": 0.25,
+      "strong": 0.4
+    }
+  },
+  "animation": {
+    "duration": {
+      "instant": 0,
+      "fast": 120,
+      "normal": 200,
+      "slow": 300,
+      "slower": 450
+    },
+    "easing": {
+      "linear": "linear",
+      "easeIn": "cubic-bezier(0.42, 0, 1, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.58, 1)",
+      "easeInOut": "cubic-bezier(0.42, 0, 0.58, 1)",
+      "spring": "cubic-bezier(0.28, 0.84, 0.42, 1)"
+    }
+  },
+  "breakpoints": {
+    "sm": 640,
+    "md": 768,
+    "lg": 1024,
+    "xl": 1280,
+    "xxl": 1536
+  },
+  "shadows": {
+    "none": "none",
+    "sm": "0 1px 3px 0 rgba(199, 125, 0, 0.1)",
+    "md": "0 4px 8px -2px rgba(199, 125, 0, 0.12)",
+    "lg": "0 12px 20px -4px rgba(199, 125, 0, 0.15)",
+    "xl": "0 24px 32px -8px rgba(199, 125, 0, 0.18)",
+    "glass": "0 8px 32px 0 rgba(199, 125, 0, 0.08)"
+  }
+}

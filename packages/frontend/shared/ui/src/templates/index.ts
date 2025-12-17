@@ -35,6 +35,8 @@ export type { MonacoEditorTemplateProps } from "./MonacoEditorTemplate";
 export { MonacoEditorTemplate } from "./MonacoEditorTemplate";
 export type { PanelLayoutProps } from "./PanelLayout";
 export { PanelLayout } from "./PanelLayout";
+export type { SettingsPanelTemplateProps } from "./SettingsPanelTemplate";
+export { SettingsPanelTemplate } from "./SettingsPanelTemplate";
 // Individual templates (for advanced use cases)
 export type { SidebarTemplateProps } from "./SidebarTemplate";
 export { SidebarTemplate } from "./SidebarTemplate";

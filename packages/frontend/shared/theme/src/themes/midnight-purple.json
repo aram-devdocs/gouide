@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "id": "midnight-purple",
+    "name": "Midnight Purple",
+    "version": "1.0.0",
+    "author": "Gouide Team",
+    "mode": "dark",
+    "description": "Rich, saturated dark theme inspired by iPhone 14 Pro Deep Purple"
+  },
+  "colors": {
+    "bg": {
+      "primary": "#1a0f2e",
+      "secondary": "#2d1f52",
+      "tertiary": "#403076",
+      "hover": "#53419a",
+      "active": "#6652be"
+    },
+    "fg": {
+      "primary": "#f4f0ff",
+      "secondary": "#e0d5ff",
+      "muted": "#b8a8e6",
+      "inverse": "#1a0f2e"
+    },
+    "accent": "#bf5af2",
+    "border": "#53419a",
+    "error": "#ff375f",
+    "success": "#30d158",
+    "warning": "#ffd426",
+    "info": "#64d2ff",
+    "glass": {
+      "tint": "#bf5af2",
+      "highlight": "#d58aff",
+      "shadow": "#0d0820"
+    }
+  },
+  "glass": {
+    "blur": {
+      "none": 0,
+      "sm": 8,
+      "md": 16,
+      "lg": 24,
+      "xl": 40
+    },
+    "opacity": {
+      "transparent": 0,
+      "light": 0.2,
+      "medium": 0.5,
+      "heavy": 0.7,
+      "opaque": 0.96
+    },
+    "borderOpacity": {
+      "none": 0,
+      "subtle": 0.18,
+      "visible": 0.35,
+      "strong": 0.5
+    }
+  },
+  "animation": {
+    "duration": {
+      "instant": 0,
+      "fast": 150,
+      "normal": 250,
+      "slow": 350,
+      "slower": 500
+    },
+    "easing": {
+      "linear": "linear",
+      "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+      "easeOut": "cubic-bezier(0, 0, 0.2, 1)",
+      "easeInOut": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "breakpoints": {
+    "sm": 640,
+    "md": 768,
+    "lg": 1024,
+    "xl": 1280,
+    "xxl": 1536
+  },
+  "shadows": {
+    "none": "none",
+    "sm": "0 2px 4px 0 rgba(191, 90, 242, 0.15)",
+    "md": "0 6px 12px -2px rgba(191, 90, 242, 0.2)",
+    "lg": "0 16px 24px -4px rgba(191, 90, 242, 0.25)",
+    "xl": "0 32px 48px -8px rgba(191, 90, 242, 0.3)",
+    "glass": "0 8px 32px 0 rgba(191, 90, 242, 0.2)"
+  }
+}

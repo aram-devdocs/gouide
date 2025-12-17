@@ -34,6 +34,10 @@ export type { Keybinding, ShortcutHandler } from "./useKeyboardShortcuts";
 export { matchesKeybinding, parseKeybinding, useKeyboardShortcuts } from "./useKeyboardShortcuts";
 export type { UsePanelManagerReturn } from "./usePanelManager";
 export { usePanelManager } from "./usePanelManager";
+export type { SpringConfig, UseSpringReturn } from "./useSpring";
+export { SPRING_PRESETS, useSpring } from "./useSpring";
+export type { UseThemeReturn } from "./useTheme";
+export { useTheme } from "./useTheme";
 export {
   type Buffer,
   type FileTreeNode,

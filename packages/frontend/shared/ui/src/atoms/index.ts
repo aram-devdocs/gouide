@@ -19,5 +19,7 @@ export type { IconProps } from "./Icon";
 export { Icon } from "./Icon";
 export type { InputProps } from "./Input";
 export { Input } from "./Input";
+export type { IconName } from "./icons";
+export * from "./icons";
 export type { TextProps } from "./Text";
 export { Text } from "./Text";
