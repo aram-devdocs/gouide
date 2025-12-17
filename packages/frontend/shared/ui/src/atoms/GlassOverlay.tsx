@@ -33,9 +33,10 @@ export function GlassOverlay({ children, onClick }: GlassOverlayProps) {
     zIndex: 1000,
     ...(onClick !== undefined && { onClick }),
     style: {
-      backdropFilter: "blur(var(--glass-blur-md))",
-      backgroundColor: "rgba(26, 15, 46, var(--glass-opacity-heavy))",
-      animation: "fadeIn var(--anim-duration-normal) var(--anim-easing-out)",
+      backdropFilter: "blur(var(--glass-blur-lg))",
+      backgroundColor: "rgba(0, 0, 0, 0.85)", // 85% dark - blocks content better
+      transition: "opacity var(--anim-duration-normal) var(--anim-easing-out)",
+      opacity: 1,
     },
   };
 

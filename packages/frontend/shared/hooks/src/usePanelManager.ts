@@ -5,10 +5,12 @@
 import {
   createInitialPanelState,
   deserializePanelState,
+  type MoveResult,
   type PanelConfig,
   type PanelId,
   type PanelPosition,
   type PanelState,
+  resolvePositionConflict,
   STORAGE_KEYS,
   serializePanelState,
 } from "@gouide/frontend-state";
@@ -23,6 +25,15 @@ export interface UsePanelManagerReturn {
   setPanelPosition: (panelId: PanelId, position: PanelPosition) => void;
   hideAllPanels: () => void;
   resetToDefaults: () => void;
+  // NEW: Dynamic positioning methods
+  movePanelToPosition: (
+    panelId: PanelId,
+    position: PanelPosition,
+    options?: { force?: boolean },
+  ) => MoveResult;
+  getPanelAtPosition: (position: PanelPosition) => PanelConfig | null;
+  getAvailablePositions: (panelId: PanelId) => PanelPosition[];
+  resizePanelProgressive: (panelId: PanelId, delta: number) => void;
 }
 
 /**
@@ -176,6 +187,128 @@ export function usePanelManager(): UsePanelManagerReturn {
     setState(createInitialPanelState());
   }, []);
 
+  /**
+   * Move panel to a new position with conflict resolution
+   */
+  const movePanelToPosition = useCallback(
+    (panelId: PanelId, position: PanelPosition, options?: { force?: boolean }): MoveResult => {
+      const result = resolvePositionConflict(state.panels, panelId, position, options);
+
+      if (result.success) {
+        setState((prev) => {
+          const panels = new Map(prev.panels);
+          const targetPanel = panels.get(panelId);
+
+          if (!targetPanel) {
+            return prev;
+          }
+
+          // Move target panel to new position and show it
+          panels.set(panelId, {
+            ...targetPanel,
+            position,
+            isVisible: true,
+          });
+
+          // Handle displaced panels
+          if (result.movedPanels.length > 1) {
+            for (const movedPanelId of result.movedPanels) {
+              if (movedPanelId === panelId) continue;
+
+              const movedPanel = panels.get(movedPanelId);
+              if (!movedPanel) continue;
+
+              // Try to move to preferred position or hide
+              const preferredPos = movedPanel.constraints.preferredPosition;
+              const isPreferredFree = !Array.from(panels.values()).some(
+                (p) => p.position === preferredPos && p.id !== movedPanelId && p.isVisible,
+              );
+
+              if (isPreferredFree && preferredPos !== position) {
+                panels.set(movedPanelId, {
+                  ...movedPanel,
+                  position: preferredPos,
+                  isVisible: true,
+                });
+              } else {
+                // Hide the panel if no alternative position is available
+                panels.set(movedPanelId, {
+                  ...movedPanel,
+                  isVisible: false,
+                });
+              }
+            }
+          }
+
+          return { panels };
+        });
+      }
+
+      return result;
+    },
+    [state.panels],
+  );
+
+  /**
+   * Get panel currently at a specific position
+   */
+  const getPanelAtPosition = useCallback(
+    (position: PanelPosition): PanelConfig | null => {
+      for (const panel of state.panels.values()) {
+        if (panel.position === position && panel.isVisible) {
+          return panel;
+        }
+      }
+      return null;
+    },
+    [state.panels],
+  );
+
+  /**
+   * Get available positions for a panel
+   */
+  const getAvailablePositions = useCallback(
+    (panelId: PanelId): PanelPosition[] => {
+      const panel = state.panels.get(panelId);
+      if (!panel) return [];
+
+      return panel.constraints.allowedPositions.filter((pos) => {
+        // Center and hidden are always available
+        if (pos === "center" || pos === "hidden") return true;
+
+        // Check if position is occupied by a visible panel
+        const occupiedPanel = Array.from(state.panels.values()).find(
+          (p) => p.position === pos && p.id !== panelId && p.isVisible,
+        );
+
+        return !occupiedPanel;
+      });
+    },
+    [state.panels],
+  );
+
+  /**
+   * Progressively resize panel (for key hold behavior)
+   */
+  const resizePanelProgressive = useCallback((panelId: PanelId, delta: number) => {
+    setState((prev) => {
+      const panels = new Map(prev.panels);
+      const panel = panels.get(panelId);
+
+      if (panel && panel.size !== undefined) {
+        const newSize = panel.size + delta;
+        const minSize = panel.minSize ?? 0;
+        const maxSize = panel.maxSize ?? Number.POSITIVE_INFINITY;
+        const clampedSize = Math.max(minSize, Math.min(maxSize, newSize));
+
+        panels.set(panelId, { ...panel, size: clampedSize });
+        return { ...prev, panels };
+      }
+
+      return prev;
+    });
+  }, []);
+
   return {
     panels: state.panels,
     togglePanel,
@@ -185,5 +318,9 @@ export function usePanelManager(): UsePanelManagerReturn {
     setPanelPosition,
     hideAllPanels,
     resetToDefaults,
+    movePanelToPosition,
+    getPanelAtPosition,
+    getAvailablePositions,
+    resizePanelProgressive,
   };
 }

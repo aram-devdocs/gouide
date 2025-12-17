@@ -15,9 +15,11 @@ import {
   useCommandPalette,
   useKeyboardShortcuts,
   usePanelManager,
+  useTheme,
 } from "@gouide/frontend-hooks";
 import { commandRegistry } from "@gouide/frontend-state";
-import { useEffect } from "react";
+import { initializeThemes } from "@gouide/frontend-theme";
+import React, { useEffect } from "react";
 import { Box } from "../atoms/Box";
 import { Divider } from "../atoms/Divider";
 import { Text } from "../atoms/Text";
@@ -25,8 +27,15 @@ import { GlassSidebar } from "../organisms/GlassSidebar";
 import { CommandPaletteTemplate } from "./CommandPaletteTemplate";
 import { EditorAreaTemplate } from "./EditorAreaTemplate";
 import { PanelLayout } from "./PanelLayout";
+import { SettingsPanelTemplate } from "./SettingsPanelTemplate";
 import { SidebarTemplate } from "./SidebarTemplate";
 import { StatusBarTemplate } from "./StatusBarTemplate";
+
+// Memoize expensive template components to prevent unnecessary re-renders
+const MemoizedSidebarTemplate = React.memo(SidebarTemplate);
+const MemoizedEditorAreaTemplate = React.memo(EditorAreaTemplate);
+const MemoizedCommandPaletteTemplate = React.memo(CommandPaletteTemplate);
+const MemoizedSettingsPanelTemplate = React.memo(SettingsPanelTemplate);
 
 /** Workspace data from useWorkspace hook */
 export interface WorkspaceData {
@@ -93,6 +102,14 @@ export function AppShell({ workspace, daemon }: AppShellProps) {
 
   // Command palette
   const palette = useCommandPalette();
+
+  // Theme management
+  const theme = useTheme();
+
+  // Initialize themes on mount
+  useEffect(() => {
+    initializeThemes();
+  }, []);
 
   // Compute active buffer from workspace state
   const activeBuffer = workspace.activeBufferId
@@ -183,6 +200,53 @@ export function AppShell({ workspace, daemon }: AppShellProps) {
       execute: () => panels.hideAllPanels(),
     });
 
+    commandRegistry.register({
+      id: "view.toggleSettings",
+      label: "Toggle Settings",
+      category: "view",
+      keywords: ["settings", "preferences", "config"],
+      keybinding: "Cmd+,",
+      execute: () => panels.togglePanel("settings"),
+    });
+
+    // Theme commands
+    commandRegistry.register({
+      id: "theme.selectTheme",
+      label: "Select Theme",
+      category: "theme",
+      keywords: ["theme", "color", "appearance"],
+      execute: () => {
+        // Open settings panel with themes tab
+        const settingsPanel = panels.panels.get("settings");
+        if (!settingsPanel?.isVisible) {
+          panels.togglePanel("settings");
+        }
+      },
+    });
+
+    commandRegistry.register({
+      id: "theme.toggleMode",
+      label: "Toggle Light/Dark Mode",
+      category: "theme",
+      keywords: ["theme", "dark", "light", "mode"],
+      keybinding: "Cmd+Shift+L",
+      execute: () => theme.toggleMode(),
+    });
+
+    // Register individual theme commands
+    const themeCommands: string[] = [];
+    for (const themeItem of theme.allThemes) {
+      const commandId = `theme.apply.${themeItem.meta.id}`;
+      commandRegistry.register({
+        id: commandId,
+        label: `Apply Theme: ${themeItem.meta.name}`,
+        category: "theme",
+        keywords: ["theme", themeItem.meta.name, themeItem.meta.mode ?? ""],
+        execute: () => theme.setTheme(themeItem.meta.id),
+      });
+      themeCommands.push(commandId);
+    }
+
     // File commands
     commandRegistry.register({
       id: "file.openWorkspace",
@@ -213,10 +277,16 @@ export function AppShell({ workspace, daemon }: AppShellProps) {
       commandRegistry.unregister("view.toggleTerminal");
       commandRegistry.unregister("view.toggleDocs");
       commandRegistry.unregister("view.hideAllPanels");
+      commandRegistry.unregister("view.toggleSettings");
+      commandRegistry.unregister("theme.selectTheme");
+      commandRegistry.unregister("theme.toggleMode");
+      for (const commandId of themeCommands) {
+        commandRegistry.unregister(commandId);
+      }
       commandRegistry.unregister("file.openWorkspace");
       commandRegistry.unregister("file.save");
     };
-  }, [palette, panels, workspace, activeBuffer]);
+  }, [palette, panels, workspace, activeBuffer, theme]);
 
   // Register keyboard shortcuts
   useKeyboardShortcuts([
@@ -241,6 +311,16 @@ export function AppShell({ workspace, daemon }: AppShellProps) {
       description: "Toggle Documentation",
     },
     {
+      commandId: "view.toggleSettings",
+      binding: { key: ",", meta: true },
+      description: "Toggle Settings",
+    },
+    {
+      commandId: "theme.toggleMode",
+      binding: { key: "l", meta: true, shift: true },
+      description: "Toggle Light/Dark Mode",
+    },
+    {
       commandId: "file.openWorkspace",
       binding: { key: "o", meta: true, shift: true },
       description: "Open Workspace",
@@ -256,6 +336,7 @@ export function AppShell({ workspace, daemon }: AppShellProps) {
   const fileTreePanel = panels.panels.get("file-tree");
   const terminalPanel = panels.panels.get("terminal");
   const docsPanel = panels.panels.get("docs");
+  const settingsPanel = panels.panels.get("settings");
 
   return (
     <Box
@@ -285,11 +366,13 @@ export function AppShell({ workspace, daemon }: AppShellProps) {
       {/* Main panel layout */}
       <Box flex={1} overflow="hidden">
         <PanelLayout
-          editor={<EditorAreaTemplate activeBuffer={activeBuffer} onSave={workspace.saveFile} />}
+          editor={
+            <MemoizedEditorAreaTemplate activeBuffer={activeBuffer} onSave={workspace.saveFile} />
+          }
           leftPanel={
             fileTreePanel?.isVisible ? (
               <GlassSidebar position="left" width={fileTreePanel.size ?? 250}>
-                <SidebarTemplate
+                <MemoizedSidebarTemplate
                   workspacePath={workspace.workspacePath}
                   files={workspace.files}
                   onOpenWorkspace={workspace.openWorkspace}
@@ -330,7 +413,7 @@ export function AppShell({ workspace, daemon }: AppShellProps) {
           bottomPanelHeight={terminalPanel?.size ?? 300}
           centerModal={
             palette.isOpen ? (
-              <CommandPaletteTemplate
+              <MemoizedCommandPaletteTemplate
                 isOpen={palette.isOpen}
                 query={palette.query}
                 commands={palette.filteredCommands}
@@ -340,6 +423,23 @@ export function AppShell({ workspace, daemon }: AppShellProps) {
                 onSelectNext={palette.selectNext}
                 onSelectPrevious={palette.selectPrevious}
                 onExecute={palette.executeSelected}
+              />
+            ) : settingsPanel?.isVisible ? (
+              <MemoizedSettingsPanelTemplate
+                availableThemes={theme.allThemes}
+                currentThemeId={theme.activeThemeId ?? ""}
+                onThemeChange={(themeId) => theme.setTheme(themeId)}
+                keybindings={[]} // TODO: Populate from command registry
+                onKeybindingChange={() => {
+                  // TODO: Implement keybinding changes
+                }}
+                fontSize={13}
+                onFontSizeChange={undefined}
+                reduceAnimations={false}
+                onReduceAnimationsChange={undefined}
+                onClose={() => panels.togglePanel("settings")}
+                onSave={undefined}
+                onReset={undefined}
               />
             ) : undefined
           }

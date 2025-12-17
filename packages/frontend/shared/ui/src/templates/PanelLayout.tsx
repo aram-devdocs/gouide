@@ -3,6 +3,7 @@
  */
 
 import type { ReactNode } from "react";
+import { useMemo } from "react";
 import { Box } from "../atoms/Box";
 import { AnimatedPanel } from "../molecules/AnimatedPanel";
 
@@ -59,6 +60,37 @@ export function PanelLayout({
   const showBottomPanel = bottomPanel !== undefined;
   const showCenterModal = centerModal !== undefined;
 
+  // Memoize style objects to prevent recreating on every render
+  const leftPanelStyle = useMemo(
+    () => ({ width: showLeftPanel ? `${leftPanelWidth}px` : "0" }),
+    [showLeftPanel, leftPanelWidth],
+  );
+
+  const rightPanelStyle = useMemo(
+    () => ({ width: showRightPanel ? `${rightPanelWidth}px` : "0" }),
+    [showRightPanel, rightPanelWidth],
+  );
+
+  const bottomPanelStyle = useMemo(
+    () => ({ height: showBottomPanel ? `${bottomPanelHeight}px` : "0" }),
+    [showBottomPanel, bottomPanelHeight],
+  );
+
+  const centerModalStyle = useMemo(
+    () => ({
+      position: "fixed" as const,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 10000,
+      pointerEvents: showCenterModal ? ("auto" as const) : ("none" as const),
+    }),
+    [showCenterModal],
+  );
+
+  const centerAreaStyle = useMemo(() => ({ minWidth: 0 }), []);
+
   return (
     <Box
       display="flex"
@@ -75,7 +107,7 @@ export function PanelLayout({
           isVisible={showLeftPanel}
           position="left"
           animation="slide"
-          style={{ width: showLeftPanel ? `${leftPanelWidth}px` : "0" }}
+          style={leftPanelStyle}
         >
           {leftPanel}
         </AnimatedPanel>
@@ -86,7 +118,7 @@ export function PanelLayout({
           flexDirection="column"
           flex={1}
           overflow="hidden"
-          style={{ minWidth: 0 }} // Prevent flex child overflow
+          style={centerAreaStyle}
         >
           {/* Editor */}
           <Box flex={1} overflow="hidden">
@@ -98,7 +130,7 @@ export function PanelLayout({
             isVisible={showBottomPanel}
             position="bottom"
             animation="slide"
-            style={{ height: showBottomPanel ? `${bottomPanelHeight}px` : "0" }}
+            style={bottomPanelStyle}
           >
             {bottomPanel}
           </AnimatedPanel>
@@ -109,7 +141,7 @@ export function PanelLayout({
           isVisible={showRightPanel}
           position="right"
           animation="slide"
-          style={{ width: showRightPanel ? `${rightPanelWidth}px` : "0" }}
+          style={rightPanelStyle}
         >
           {rightPanel}
         </AnimatedPanel>
@@ -121,14 +153,7 @@ export function PanelLayout({
           isVisible={showCenterModal}
           position="center"
           animation="fade"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            pointerEvents: showCenterModal ? "auto" : "none",
-          }}
+          style={centerModalStyle}
         >
           {centerModal}
         </AnimatedPanel>

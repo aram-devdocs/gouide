@@ -5,6 +5,7 @@
 import type { Command } from "@gouide/frontend-state";
 import { useEffect } from "react";
 import { Box } from "../atoms/Box";
+import { GlassContainer } from "../atoms/GlassContainer";
 import { Input } from "../atoms/Input";
 import { Text } from "../atoms/Text";
 
@@ -74,17 +75,19 @@ export function CommandPalette({
   }, [onClose, onSelectNext, onSelectPrevious, onExecute]);
 
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      width={600}
-      maxWidth="90vw"
-      backgroundColor="bg-secondary"
-      borderRadius="lg"
-      overflow="hidden"
+    <GlassContainer
+      blur="xl"
+      opacity="opaque"
+      glow
       style={{
-        boxShadow: "var(--shadow-glass)",
-        border: "1px solid var(--border-color)",
+        display: "flex",
+        flexDirection: "column",
+        width: 600,
+        maxWidth: "90vw",
+        borderRadius: "var(--radius-lg)",
+        overflow: "hidden",
+        backgroundColor: "rgba(26, 15, 46, 0.99)", // 99% opaque - no bleed
+        border: "1px solid rgba(255, 255, 255, 0.15)",
       }}
     >
       {/* Search input */}
@@ -100,7 +103,15 @@ export function CommandPalette({
       </Box>
 
       {/* Command list */}
-      <Box maxHeight={400} overflow="auto" paddingX="sm" paddingBottom="sm">
+      <Box
+        maxHeight={400}
+        overflow="auto"
+        paddingX="sm"
+        paddingBottom="sm"
+        style={{
+          backgroundColor: "rgba(26, 15, 46, 0.8)", // More opaque
+        }}
+      >
         {commands.length === 0 ? (
           <Box padding="lg" display="flex" justifyContent="center">
             <Text size="base" color="fg-muted">
@@ -120,7 +131,7 @@ export function CommandPalette({
           ))
         )}
       </Box>
-    </Box>
+    </GlassContainer>
   );
 }
 

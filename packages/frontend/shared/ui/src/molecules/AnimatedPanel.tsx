@@ -1,9 +1,11 @@
 /**
  * AnimatedPanel - animated container for panels with slide/fade transitions
- * Uses CSS variables for timing and easing
+ * Uses spring physics for smooth, natural motion
  */
 
+import { useSpring } from "@gouide/frontend-hooks";
 import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import { Box } from "../atoms/Box";
 
 export type PanelPosition = "left" | "right" | "bottom" | "top" | "center";
@@ -16,36 +18,10 @@ export interface AnimatedPanelProps {
   animation?: PanelAnimation;
   className?: string;
   style?: CSSProperties;
-}
-
-/**
- * Get transform for panel based on position and visibility
- */
-function getTransform(
-  position: PanelPosition,
-  isVisible: boolean,
-  animation: PanelAnimation,
-): string {
-  if (isVisible) {
-    // Visible state - no transform (except scale for center)
-    return position === "center" && animation === "fade-scale" ? "scale(1)" : "none";
-  }
-
-  // Hidden state - transform based on position
-  switch (position) {
-    case "left":
-      return animation === "slide" ? "translateX(-100%)" : "none";
-    case "right":
-      return animation === "slide" ? "translateX(100%)" : "none";
-    case "bottom":
-      return animation === "slide" ? "translateY(100%)" : "none";
-    case "top":
-      return animation === "slide" ? "translateY(-100%)" : "none";
-    case "center":
-      return animation === "fade-scale" ? "scale(0.95)" : "none";
-    default:
-      return "none";
-  }
+  /**
+   * Spring preset for animation (default: "responsive")
+   */
+  springPreset?: "gentle" | "responsive" | "snappy" | "bouncy";
 }
 
 /**
@@ -57,6 +33,7 @@ function getTransform(
  *   isVisible={isPanelOpen}
  *   position="left"
  *   animation="slide"
+ *   springPreset="snappy"
  * >
  *   <SidebarContent />
  * </AnimatedPanel>
@@ -69,16 +46,94 @@ export function AnimatedPanel({
   animation = "slide",
   className,
   style,
+  springPreset = "responsive",
 }: AnimatedPanelProps) {
+  // Spring animations for different properties
+  const translateX = useSpring(0, springPreset);
+  const translateY = useSpring(0, springPreset);
+  const opacity = useSpring(0, springPreset);
+  const scale = useSpring(1, springPreset);
+
+  // Use refs to avoid dependency loop
+  const translateXRef = useRef(translateX);
+  const translateYRef = useRef(translateY);
+  const opacityRef = useRef(opacity);
+  const scaleRef = useRef(scale);
+
+  // Update refs when spring objects change
+  useEffect(() => {
+    translateXRef.current = translateX;
+    translateYRef.current = translateY;
+    opacityRef.current = opacity;
+    scaleRef.current = scale;
+  });
+
+  // Update spring targets based on visibility and position
+  useEffect(() => {
+    if (isVisible) {
+      // Visible state
+      translateXRef.current.setTarget(0);
+      translateYRef.current.setTarget(0);
+      opacityRef.current.setTarget(1);
+      scaleRef.current.setTarget(1);
+    } else {
+      // Hidden state - set transforms based on position
+      opacityRef.current.setTarget(0);
+
+      if (animation === "slide") {
+        switch (position) {
+          case "left":
+            translateXRef.current.setTarget(-100);
+            translateYRef.current.setTarget(0);
+            break;
+          case "right":
+            translateXRef.current.setTarget(100);
+            translateYRef.current.setTarget(0);
+            break;
+          case "bottom":
+            translateXRef.current.setTarget(0);
+            translateYRef.current.setTarget(100);
+            break;
+          case "top":
+            translateXRef.current.setTarget(0);
+            translateYRef.current.setTarget(-100);
+            break;
+          case "center":
+            translateXRef.current.setTarget(0);
+            translateYRef.current.setTarget(0);
+            break;
+        }
+      } else if (animation === "fade-scale" && position === "center") {
+        scaleRef.current.setTarget(0.95);
+        translateXRef.current.setTarget(0);
+        translateYRef.current.setTarget(0);
+      } else {
+        // Pure fade
+        translateXRef.current.setTarget(0);
+        translateYRef.current.setTarget(0);
+        scaleRef.current.setTarget(1);
+      }
+    }
+  }, [isVisible, position, animation]); // Only primitive dependencies
+
+  // Build transform string
+  const transforms: string[] = [];
+  if (translateX.value !== 0) {
+    transforms.push(`translateX(${translateX.value}%)`);
+  }
+  if (translateY.value !== 0) {
+    transforms.push(`translateY(${translateY.value}%)`);
+  }
+  if (scale.value !== 1) {
+    transforms.push(`scale(${scale.value})`);
+  }
+
   const panelStyle: CSSProperties = {
-    transform: getTransform(position, isVisible, animation),
-    opacity: isVisible ? 1 : 0,
-    transition: `
-      transform var(--anim-duration-normal) var(--anim-easing-spring),
-      opacity var(--anim-duration-normal) var(--anim-easing-out)
-    `,
+    transform: transforms.length > 0 ? transforms.join(" ") : "none",
+    opacity: opacity.value,
     pointerEvents: isVisible ? "auto" : "none",
     willChange: "transform, opacity",
+    backfaceVisibility: "hidden", // Force GPU acceleration
     ...style,
   };
 
