@@ -250,8 +250,8 @@ importers:
         specifier: ^10.1.9
         version: 10.1.9(@types/react@19.2.7)(esbuild@0.25.12)(rollup@4.53.3)(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(vite@6.4.1(yaml@2.8.2))
       '@storybook/addon-onboarding':
-        specifier: ^10.1.9
-        version: 10.1.9(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
+        specifier: ^10.1.10
+        version: 10.1.10(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
       '@storybook/addon-vitest':
         specifier: ^10.1.9
         version: 10.1.9(@vitest/browser-playwright@4.0.15)(@vitest/browser@4.0.15(vite@6.4.1(yaml@2.8.2))(vitest@4.0.15))(@vitest/runner@4.0.15)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(vitest@4.0.15)
@@ -858,10 +858,10 @@ packages:
     peerDependencies:
       storybook: ^10.1.9
 
-  '@storybook/addon-onboarding@10.1.9':
-    resolution: {integrity: sha512-9f0F5DBA01jZSZXrOzhiuubMdQrej8C15mrIcXoPFNPNbvx9IBYsAiVWv3Tj76mF1IuvVy0J7vzNtGT+kMvKzg==}
+  '@storybook/addon-onboarding@10.1.10':
+    resolution: {integrity: sha512-CtfoHqgdm63NsGyYBcr1UhJV6m213ckU3aKTYJRS+3NLkx18BIME9biJwiTiRK4Pm4jbc69V21JzLumFcaiJbw==}
     peerDependencies:
-      storybook: ^10.1.9
+      storybook: ^10.1.10
 
   '@storybook/addon-vitest@10.1.9':
     resolution: {integrity: sha512-rIJEwWhhguleQ8Sw0rI3artubm+PzgHqS5nG00KpWnGp4mvsx0k3kxJjSyf9VhSApyG9G3SMB+05JBlGbJGKdA==}
@@ -2552,7 +2552,7 @@ snapshots:
       - vite
       - webpack
 
-  '@storybook/addon-onboarding@10.1.9(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))':
+  '@storybook/addon-onboarding@10.1.10(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))':
     dependencies:
       storybook: 10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
 
