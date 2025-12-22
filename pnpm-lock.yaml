@@ -253,8 +253,8 @@ importers:
         specifier: ^10.1.9
         version: 10.1.9(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
       '@storybook/addon-vitest':
-        specifier: ^10.1.9
-        version: 10.1.9(@vitest/browser-playwright@4.0.15)(@vitest/browser@4.0.15(vite@6.4.1(yaml@2.8.2))(vitest@4.0.15))(@vitest/runner@4.0.15)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(vitest@4.0.15)
+        specifier: ^10.1.10
+        version: 10.1.10(@vitest/browser-playwright@4.0.15)(@vitest/browser@4.0.15(vite@6.4.1(yaml@2.8.2))(vitest@4.0.15))(@vitest/runner@4.0.15)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(vitest@4.0.15)
       '@storybook/react-vite':
         specifier: ^10.1.9
         version: 10.1.9(esbuild@0.25.12)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.53.3)(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(typescript@5.9.3)(vite@6.4.1(yaml@2.8.2))
@@ -863,13 +863,13 @@ packages:
     peerDependencies:
       storybook: ^10.1.9
 
-  '@storybook/addon-vitest@10.1.9':
-    resolution: {integrity: sha512-rIJEwWhhguleQ8Sw0rI3artubm+PzgHqS5nG00KpWnGp4mvsx0k3kxJjSyf9VhSApyG9G3SMB+05JBlGbJGKdA==}
+  '@storybook/addon-vitest@10.1.10':
+    resolution: {integrity: sha512-dh5ZesgvZY619nkweo9fbORQQSU0hIFQnqlcnU1DrGXumt9SzVHF3/2Lxe+HGHLHK6Sk8jZp/16BjZ/zxSG61Q==}
     peerDependencies:
       '@vitest/browser': ^3.0.0 || ^4.0.0
       '@vitest/browser-playwright': ^4.0.0
       '@vitest/runner': ^3.0.0 || ^4.0.0
-      storybook: ^10.1.9
+      storybook: ^10.1.10
       vitest: ^3.0.0 || ^4.0.0
     peerDependenciesMeta:
       '@vitest/browser':
@@ -2556,7 +2556,7 @@ snapshots:
     dependencies:
       storybook: 10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
 
-  '@storybook/addon-vitest@10.1.9(@vitest/browser-playwright@4.0.15)(@vitest/browser@4.0.15(vite@6.4.1(yaml@2.8.2))(vitest@4.0.15))(@vitest/runner@4.0.15)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(vitest@4.0.15)':
+  '@storybook/addon-vitest@10.1.10(@vitest/browser-playwright@4.0.15)(@vitest/browser@4.0.15(vite@6.4.1(yaml@2.8.2))(vitest@4.0.15))(@vitest/runner@4.0.15)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@10.1.9(@testing-library/dom@10.4.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(vitest@4.0.15)':
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/icons': 2.0.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
