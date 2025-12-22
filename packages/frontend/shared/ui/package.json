@@ -35,7 +35,7 @@
     "@storybook/addon-vitest": "^10.1.9",
     "@storybook/addon-a11y": "^10.1.9",
     "@storybook/addon-docs": "^10.1.9",
-    "@storybook/addon-onboarding": "^10.1.9",
+    "@storybook/addon-onboarding": "^10.1.10",
     "vitest": "^4.0.15",
     "playwright": "^1.57.0",
     "@vitest/browser-playwright": "^4.0.15",
